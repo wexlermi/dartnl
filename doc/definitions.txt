@@ -1,0 +1,5 @@
+Definition: A \textbf{polynomial} in the context of the dart-nl project is an element of a commutative polynomial ring over the integers with finitely many indeterminates.
+
+Definition: A \textbf{mathematical expression} in the context of the dart-nl project is a tuple (lhs,con,rhs). The first and the last entry, lhs and rhs, stand for "left hand side" resp. "right hand side" and describe the polynomial on the left resp. right hand side of the expression. The entry "con" is the connector between the left hand side and the right hand side. In our project, we only support con \in \{=,!=\}.
+
+Definition: A \textbf{system-to-solve} in the context of the dart-nl project is a tuple (vars, expr). The entry "expr" is a non empty set of mathematical expressions, and "var" is a set consisting of all indeterminates appearing in the mathematical expressions in "expr". A \textbf{solution} of a system to solve is a set of maps from "var" to the set of integers,  such that for every map all the mathematical expressions in the system-to-solve evaluate to true boolean expressions once applied the map to the variables in the polynomials inside the expressions.
