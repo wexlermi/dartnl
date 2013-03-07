@@ -1,0 +1,199 @@
+\documentclass[oribibl]{llncs}
+ 
+\usepackage{amssymb} % AMS Fonts
+\usepackage{amsmath} % AMSLaTeX
+\usepackage{url}
+
+\newcommand{\ZZ}{{\mathbb{Z}}}
+\newcommand{\QQ}{{\mathbb{Q}}}
+\newcommand{\RR}{{\mathbb{R}}}
+\newcommand{\CC}{{\mathbb{C}}}
+\newcommand{\NN}{{\mathbb{N}}}
+\renewcommand{\H}{{\mathcal{H}}}
+\renewcommand{\L}{{\mathcal{L}}}
+\newcommand{\F}{{\mathsf{F}}}
+\newcommand{\bigO}{{\mathsf{O}}}
+\newcommand{\R}{{\mathsf{R}}}
+\newcommand{\Fp}{{\mathbb{F}_p}}
+\newcommand{\Fq}{{\mathbb{F}_q}}
+\newcommand{\Fqd}{{\mathbb{F}_{q^d}}}
+\newcommand{\Fqe}{{\mathbb{F}_{q^e}}}
+\newcommand{\Fz}{{\F[z]}}
+\newcommand{\Fzf}{{\Fz /(f)}}
+\newcommand{\Fzfe}{{\Fz /(f^e)}}
+\newcommand{\Rn}{{\R^{n \times 1}}}
+\newcommand{\Rnn}{{\R^{n \times n}}}
+\newcommand{\Fden}{{\F^{den \times 1}}}
+\newcommand{\Fdenden}{{\F^{den \times den}}}
+\newcommand{\ZZp}{{\ZZ_p}}
+\newcommand{\ZZpe}{{\ZZ_{p^e}}}
+\newcommand{\nxn}{{n\times n}}
+\newcommand{\calI}{{\mathcal I}}
+
+\newcommand{\FD}{{\F[\partial;\sigma,\delta]}}
+\newcommand{\D}{{\partial}}
+\newcommand{\shift}{{\mathcal{S}}}
+\newcommand{\diff}{{\lower3pt\hbox{\large$'$}}}
+\renewcommand{\k}{{\mathsf{k}}}
+\newcommand{\lclm}{{\mbox{\upshape lclm}}}
+\newcommand{\lcrm}{{\mbox{\upshape lcrm}}}
+\newcommand{\gcld}{{\mbox{\upshape gcld}}}
+\newcommand{\gcrd}{{\mbox{\upshape GCRD}}}
+
+
+
+\newcommand{\smallskipback}{\vspace{-\smallskipamount}}
+\newcommand{\medskipback}{\vspace{-\medskipamount}}
+\newcommand{\bigskipback}{\vspace{-\bigskipamount}}
+
+
+
+%\reversemarginpar
+\makeatletter
+\@twosidefalse
+\makeatother
+%\renewcommand*{\marginfont}{\color{red}\bf}
+%\newcommand{\TODO}[1]{\marginnote[#1]{}}
+
+\bibliographystyle{alpha}
+
+\begin{document}
+
+\title{\textsc{CREST-Z3} - Automated Test Generation Capable of Nonlinear Constraints\\[12pt]
+Project for CS847}
+
+\author{X. Lan, M. Wexler, A. Heinle}
+
+\institute{University of Waterloo, David R. Cheriton School of Computer Science}
+
+\maketitle
+
+\begin{abstract}
+  In this project we will explore \textsc{CREST-Z3} \cite{CRESTZ3}, an automated test case generator for C-programs. It is an extension of the tool \textsc{CREST} \cite{CREST} capable of solving nonlinear constraints in the process of generating tests. We will discuss the capabilities and the practical, as well as the theoretical limitations of this tool.
+\end{abstract}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{Introduction}
+%Here: Description of the problem they want to solve
+%         Reference to discussed DART
+%         Examples where this can appear.
+%         Outline of the report
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{CREST}
+%Here: How to use CREST
+%         Software architecture of CREST
+%         Examples
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+\section{\textsc{Z3}}
+
+\subsection{Introduction to Z3}
+The tool \textsc{Z3} \cite{de2008z3}  is developed by researchers from \textsc{Microsoft} to decide -- if
+possible -- ``Satisfiability modulo theories'' (abbreviated SMT)
+problems. These problems are given in first order logic and can be
+seen as an extension to the satisfiability problem in predicate logic
+(SAT) by introducing datatypes like numbers and their respective
+operations. A standard to represent those formulas in a automatically
+readable form was developed in the \textsc{SMT-LIB} project  \cite{barrett2010smt}.
+The developers of \textsc{Z3} are using this standard as their
+internal representation.
+
+We will refrain from providing a detailed description of SMT problems
+and their representation as this would exceed the scope of this
+report. But the following example will present the basic structure of
+those problems.
+
+\begin{example}
+  Given the variables $x,y,z$, which we consider to have the type to
+  be integer numbers. An SMT solver could answer the question whether
+  a solution for $x,y$ and $z$ does exist given the following
+  constraints:
+  \begin{enumerate}
+    \item $x \neq y$
+    \item $xy+x^2y=z$
+    \item $|z|<10$.
+  \end{enumerate}
+  The solver would either state that he cannot solve this problem, or
+  no solution does exist (provable), or it would provide values for
+  $x,y$ and $z$ satisfying the given conditions.
+\end{example}
+
+\textsc{Z3} can be included as a library to C/++ source code and one
+can call the theorem prover from there. This is very handy as one does
+not have to parse an input to a tool and parse the output back, but
+just can call the respective functions inside his/her own functions.
+
+The source code of \textsc{Z3} was recently (September 2012) published
+by Microsoft (\url{http://z3.codeplex.com/}), so we could examine the
+techniques the developers used to handle the nonlinear equations we
+are looking for inside their code. We will go into more detail on that
+after we discussed some theory behind nonlinear equations.
+
+\subsection{Theoretical Limitations}
+
+There are some theoretical limitations given considering the problem
+of solving nonlinear equations.
+
+Given the following scenario: consider integer variables $x_1, \ldots,
+x_n, n \in \NN$, and a boolean expression inside an if statement that
+evaluates to true if and only if a polynomial given in those variables
+is zero for some choice of $x_1, \ldots, x_n$. Finding a solution for
+the $x_i$ is the so called Hilbert's 10th problem
+\cite{davis1984hilbert}, which was proven to be undecidable
+\cite{matiyasevich1970enumerable}.
+
+Nonetheless, one can always try to find solutions and cancel the
+computations after a certain amount of time.
+
+Given a set of polynomial equations, the status quo to find solutions
+is to calculate a so called Gr\"obner basis of this system (originated
+in \cite{buchberger1970algorithmisches}). This can be seen as a
+simplification of the system, which leads in the case of the existence
+of only finitely many solutions directly to the solutions. Inside the
+source code of \textsc{Z3} we could also find an implementation an
+algorithm to calculate those bases.
+
+But there is one problem to this approach. Calculating a Gr\"obner
+basis has double exponential complexity, independent from the choice
+of the algorithm to compute it (\cite{mayr1982complexity}). Therefore,
+computations can take a long time and the output may be the most
+simple one, but is still hard to utilize for finding the
+solutions.
+
+Finding solutions to nonlinear equations is also heavily studied in current
+research. Almost every computer algebra system provides a
+functionality to solve systems of equations, but there are still
+plenty of examples where those solvers do fail. Thus one is also
+limited by the possibilities current research provides.
+
+%         Hard problems
+%         Alternatives from computer algebra
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{Experiments}
+
+%Here: Real life C programs (instructed)
+%         Outline how often we find really complicated examples in C-Code
+%         Feasibility of instructing programs for CREST
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{Conclusion and Future Work}
+
+%Here: Extension to other programming languages? Or even Computer algebra systems?
+%         Feasible for real world, as conditions do not get very complicated in general
+%         Good for testing software that implements formulas or approximations.
+%         Extending it to more general data-types?
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\bibliography{report}
+
+\end{document}
