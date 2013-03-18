@@ -75,22 +75,79 @@ Project for CS847}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \section{Introduction}
-%Here: Description of the problem they want to solve
-%         Reference to discussed DART
-%         Examples where this can appear.
-%         Outline of the report
+
+In the beginning of the course, there was a presentation given on the
+paper \cite{godefroid2005dart}. The authors of this paper presented an
+automated way of generating test sets for given programs written in
+the programming language \textsc{C}. The main principle of that tool
+appears in the literature as \textbf{Concolic Testing} (this terminology appeared
+for the first time in the paper \cite{sen2005cute}).
+
+Informally speaking, concolic testing refers the concrete
+execution of the program given either random or specifically chosen
+values for the variables. During this execution, one collects symbolic
+conditions on the
+variables in order to reach code lines whenever a branch occurs
+(e.g. induced by an \texttt{if}-statement). Those conditions are fed
+to a theorem prover in order to solve for possible variable values to
+enter each branch. With that, people are trying to generate test sets
+that satisfy the best coverage of the code -- in terms of nodes in the
+control flow graph -- as possible.
+
+\textsc{CREST}, in its original version, used a theorem prover called
+\textsc{YICES} (\cite{dutertre2006yices}) for the part of solving
+conditions to enter a branch. It is a powerful tool, yet it has a
+significant weakness: It can only deal with linear equations. This is
+a strong restriction, as for example an equation like
+$$x^2 = 10 \mod 47$$
+for $x \in \ZZ$ could not be resolved.
+Also in other concolic testing tools like \textsc{CUTE}
+(\cite{sen2005cute}), \textsc{DART},
+\textsc{EXE} (\cite{cadar2008exe}) and \textsc{PathCrawler}
+(\cite{williams2005pathcrawler}), only linear equations could be resolved.
+
+This is the case for a good reason, as we will see in a succeeding
+section where we will discuss computational limitations we have
+considering nonlinear equations.
+
+Nevertheless, for the nonlinear case, in the project \textsc{CREST-Z3}, the theorem prover was replaced
+by \textsc{Microsoft}s theorem prover \textsc{Z3}
+(\cite{de2008z3}), which can handle a broader range of equation types
+including nonlinear equations. \textsc{CREST-Z3}, its architecture and
+its practicality will be the subject of this paper.
+
+The paper is organized as follows. Section \ref{sctn:CRESTZ3} is
+dedicated to \textsc{CREST}(-\textsc{Z3}. We will see how one can use
+this tool, specialities about its architecture, and some limitations
+that we found.
+
+In section \ref{sctn:Z3}, we will examine those limitations a little
+bit closer from a theoretical point of view. A general overview of
+\textsc{Z3} will also be provided.
+
+Section \ref{sctn:Experiments} contains experiments we have done with
+\textsc{CREST-Z3}. Furthermore, we were examining types of open source projects
+where nonlinear equations do play a role in the branching conditions
+of the code.
+
+The last section draws a conclusion of our work. Furthermore, we will
+provide possible ways how one can improve/extend the work to make it
+either faster or more practically useful.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\section{CREST}
+\section{\textsc{CREST}(-\textsc{Z3})}
+\label{sctn:CRESTZ3}
 %Here: How to use CREST
 %         Software architecture of CREST
+%         Limitations of CREST
 %         Examples
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
-\section{\textsc{Z3}}
+\section{\textsc{Z3} And the Problem of Solving Nonlinear Equations}
+\label{sctn:Z3}
 
 \subsection{Introduction to Z3}
 The tool \textsc{Z3} \cite{de2008z3}  is developed by researchers from \textsc{Microsoft} to decide -- if
@@ -109,7 +166,7 @@ report. But the following example will present the basic structure of
 those problems.
 
 \begin{example}
-  Given the variables $x,y,z$, which we consider to have the type to
+  Given the variables $x,y,z$, which we consider to
   be integer numbers. An SMT solver could answer the question whether
   a solution for $x,y$ and $z$ does exist given the following
   constraints:
@@ -151,7 +208,7 @@ Nonetheless, one can always try to find solutions and cancel the
 computations after a certain amount of time.
 
 Given a set of polynomial equations, the status quo to find solutions
-is to calculate a so called Gr\"obner basis of this system (originated
+is to calculate as a first step a so called Gr\"obner basis of this system (originated
 in \cite{buchberger1970algorithmisches}). This can be seen as a
 simplification of the system, which leads in the case of the existence
 of only finitely many solutions directly to the solutions. Inside the
@@ -163,7 +220,8 @@ basis has double exponential complexity, independent from the choice
 of the algorithm to compute it (\cite{mayr1982complexity}). Therefore,
 computations can take a long time and the output may be the most
 simple one, but is still hard to utilize for finding the
-solutions.
+solutions. The next subsection will provide an example to illustrate
+this fact.
 
 Finding solutions to nonlinear equations is also heavily studied in current
 research. Almost every computer algebra system provides a
@@ -211,7 +269,7 @@ Let us look at the Gr\"obner basis for this system, which we
 calculated using the computer algebra system \textsc{Singular}
 \cite{Singular:2012}. The output is a polynomial system that fits into
 a file of the size of 283KB. We will give a short snapshot of one
-element in the output for visualization:
+element in the output for the sake of visualization:
 
 \begin{verbatim}
 6755988021120000yw31-165994625678918400000yw30
@@ -230,7 +288,7 @@ element in the output for visualization:
 it took several minutes to compute this Gr\"obner basis. There are
 several factors that play a role how fast an algorithm computes this
 Gr\"obner basis. One of them is how ``smart'' it is implemented. This
-computation can take hours if the algorithm is not smart.
+computation can take either minutes or hours, depending on the implementation.
 
 Of course, one can also try to solve those equation using
 state-of-the-art computer algebra systems. We observed that those will
@@ -292,9 +350,18 @@ can also be done similarly with the tools above. This would lead to an
 interesting comparison between those tools regarding the branches in
 code they are able to resolve.
 
+Another approach that is in our opinion much more preferable would be
+to utilize computer algebra systems as the ones mentioned in the last subsection, which in general contain the
+implementations of the latest research techniques to solve equations
+of all kinds. There is of course more instrumentation to be done in
+order to get them to work within the \textsc{CREST} context, but the
+extra effort will be paid back by lesser calculation times plus more
+robust results.
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\section{Experiments}
+\section{Experiments And Case Study}
+\label{sctn:Experiments}
 
 %Here: Real life C programs (instructed)
 %         Outline how often we find really complicated examples in C-Code
@@ -304,6 +371,7 @@ code they are able to resolve.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \section{Conclusion and Future Work}
+\label{sctn:Conclusion}
 
 %Here: Extension to other programming languages? Or even Computer algebra systems?
 %         Feasible for real world, as conditions do not get very complicated in general
