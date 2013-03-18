@@ -60,7 +60,7 @@
 \begin{document}
 
 \title{\textsc{CREST-Z3} - Automated Test Generation Capable of Nonlinear Constraints\\[12pt]
-Project for CS847}
+Project for CS846}
 
 \author{X. Lan, M. Wexler, A. Heinle}
 
@@ -138,8 +138,151 @@ either faster or more practically useful.
 
 \section{\textsc{CREST}(-\textsc{Z3})}
 \label{sctn:CRESTZ3}
-%Here: How to use CREST
-%         Software architecture of CREST
+
+For notational convenience, we will from now on refer to
+\textsc{CREST-Z3} as \textsc{CREST}. Most of the description of the
+use of \textsc{CREST-Z3} can also be applied to the original
+\textsc{CREST} project.
+
+\subsection{How to use \textsc{CREST}}
+We will start by presenting how one can use \textsc{CREST} to find
+inputs in order to obtain a reasonable code coverage with its tests.
+
+One has to manually instrument code prior of running \textsc{CREST}.
+
+Let us study how this is done using the following example:
+
+\begin{example}
+\label{ex:codeForDemo}
+\begin{verbatim}
+[1]   #include <crest.h>
+[2]   #include <stdio.h>
+[3]  
+[4]   int main(int argc, char *argv[])
+[5]   {
+[6]     int w;
+[7]     int x;
+[8]     int y;
+[9]     int z;
+[10]    CREST_int(x);
+[11]    CREST_int(y);
+[12]    CREST_int(z);
+[13]    CREST_int(w);
+[14]    if (x*y + z == 0){
+[15]      w = x*y*z;
+[16]      if (w == z + x*y-1){
+[17]        printf("GOAL %d %d %d %d\n", x, y, z, w);
+[18]        return 1;
+[19]      }
+[20]    }	
+[21]    return 0;
+[22]  }
+\end{verbatim}
+\end{example}
+
+The main steps are:
+\begin{enumerate}
+  \item Including the \texttt{crest.h} header file of the
+    \textsc{CREST} project (Line 1)
+   \item For all variables that appear in branching nodes of the code
+     (in this case the variables $x,y,z$ and $w$), one has to instruct
+     \textsc{CREST} to collect symbolic conditions with respect to
+     those variables during the
+     execution. (Lines 10-13)
+   \item OPTIONAL: Add a
+     \texttt{printf} to every line inside conditional branch that
+     outputs the variable values (Line 17). Then, during the execution of
+     \textsc{CREST}, whenever a solution is found that enters the
+     desired line of code (in this case line 18), an output is
+     provided stating the calculated values for the variables.
+\end{enumerate}
+
+\begin{remark}
+  This example already contains nonlinear constraints inside the
+  \texttt{if}-statements and therefore serves as an example how
+  \textsc{CREST-Z3} extends the functionality of the classical \textsc{CREST}.
+\end{remark}
+
+\begin{remark}
+  The datatypes \textsc{CREST} can handle in the current status of the
+  project are: (unsigned) characters, (unsigned) integers, (unsigned) shorts.
+\end{remark}
+
+Then, after compiling the \textsc{CREST} project according to the
+instructions, one runs inside the \texttt{bin} folder of the project
+the program \texttt{crestc} with the instructed file as input. This
+will generate the control flow graph and will collect initial information
+about the program. For this code analysis step, the developers of
+\textsc{CREST} utilize a tool called \textsc{CIL} (\cite{necula2002cil}).
+
+As a result, in the same folder as the instructed file, several other
+files will appear, including the compiled version of the
+program. Those files are provided by \textsc{CIL} and one can find the
+control flow graph and general information about the branching inside
+the program there. %TODO: Discuss the files?
+
+After that, in order to obtain possible values for the observed
+variables for maximal code coverage, one has to run the tool
+\texttt{run\_crest} with the following inputs:
+\begin{itemize}
+  \item The executable file that was compiled by \texttt{crestc}
+  \item A number of maximal iterations through the control flow graph
+    we want to allow (i.e. a limitation to the paths we
+    want to consider. Otherwise the program might run too long)
+  \item A strategy \textsc{CREST} should use to traverse the control
+    flow graph. Possible options here are in the set
+\begin{center}
+$\{$\texttt{dfs}, \texttt{cfg}, \texttt{random},
+    \texttt{uniform\_random}, \texttt{random\_input}$\}$
+\end{center}
+\end{itemize}
+For details on the respective search strategies consider
+\cite{CREST}.
+
+An example of for this would be:
+\begin{verbatim}
+$ ../bin/run_crest ./hello 10 -dfs
+\end{verbatim}
+
+After that, in the same folder some new files do appear. One class of
+files have a name of the form \texttt{input}${}^*$, where one can find possible input
+variables even if one has not added a \texttt{printf} line as in the
+code above (Line 17). Another file is called \texttt{coverage} and contains the
+nodes in the control flow graph indicated by numbers that are
+covered. Additionally, one can find a file called
+\texttt{szd\_execution}, where the intermediate symbolic formulas that
+appeared during the execution of \texttt{run\_crest} can be found.
+
+For the code given in Example \ref{ex:codeForDemo}, one of the \texttt{input}-files has
+the following content:
+\begin{verbatim}
+-1
+1
+1
+1409925863
+\end{verbatim}
+
+That means, that $x :=-1, y:=1, z:=1, w:=1409925863$ would be possible
+inputs to reach the code lines 17 and 18.
+
+\begin{remark}
+That $w$ has such a large
+value is due to the fact that it does not matter what we put for $w$
+as input, as it is redefined in line 15 dependent on $x,y$ and
+$z$. Therefore, it did not play a role in any further symbolic
+evaluation and the standard test value that is chosen randomly for the
+first run is kept.
+\end{remark}
+
+\subsection{Limitations of \textsc{CREST}}
+
+We have created several small test cases to check what CREST can and
+what it cannot  or just partially do. We will discuss its limitations
+through the following subsections.
+
+
+
+%Here: Software architecture of CREST
 %         Limitations of CREST
 %         Examples
 
