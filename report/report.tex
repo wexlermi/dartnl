@@ -99,25 +99,24 @@ control flow graph -- as possible.
 conditions to enter a branch. It is a powerful tool, yet it has a
 significant weakness: It can only deal with linear equations. This is
 a strong restriction, as for example an equation like
-$$x^2 = 10 \mod 47$$
+$$x^2 = 14 \mod 47$$
 for $x \in \ZZ$ could not be resolved.
 Also in other concolic testing tools like \textsc{CUTE}
 (\cite{sen2005cute}), \textsc{DART},
 \textsc{EXE} (\cite{cadar2008exe}) and \textsc{PathCrawler}
-(\cite{williams2005pathcrawler}), only linear equations could be resolved.
+(\cite{williams2005pathcrawler}), only linear equations are solvable.
 
-This is the case for a good reason, as we will see in a succeeding
-section where we will discuss computational limitations we have
+This is the case for a good reason, as we will see in section \ref{sctn:Z3} where we will discuss computational limitations we have
 considering nonlinear equations.
 
 Nevertheless, for the nonlinear case, in the project \textsc{CREST-Z3}, the theorem prover was replaced
-by \textsc{Microsoft}s theorem prover \textsc{Z3}
+by \textsc{Microsoft}s solution \textsc{Z3}
 (\cite{de2008z3}), which can handle a broader range of equation types
 including nonlinear equations. \textsc{CREST-Z3}, its architecture and
 its practicality will be the subject of this paper.
 
 The paper is organized as follows. Section \ref{sctn:CRESTZ3} is
-dedicated to \textsc{CREST}(-\textsc{Z3}. We will see how one can use
+dedicated to \textsc{CREST}(-\textsc{Z3}). We will see how one can use
 this tool, specialities about its architecture, and some limitations
 that we found.
 
@@ -126,7 +125,7 @@ bit closer from a theoretical point of view. A general overview of
 \textsc{Z3} will also be provided.
 
 Section \ref{sctn:Experiments} contains experiments we have done with
-\textsc{CREST-Z3}. Furthermore, we were examining types of open source projects
+\textsc{CREST-Z3}. Furthermore, we were examining types of \textsc{C/++}-projects
 where nonlinear equations do play a role in the branching conditions
 of the code.
 
@@ -253,6 +252,13 @@ covered. Additionally, one can find a file called
 \texttt{szd\_execution}, where the intermediate symbolic formulas that
 appeared during the execution of \texttt{run\_crest} can be found.
 
+\begin{remark}
+  The \texttt{input} files are only added by default in
+  \textsc{CREST-Z3}, but not in the original \textsc{CREST}. In order
+  to instrument \textsc{CREST} to do the same, one can follow the
+  instructions given here: \url{https://code.google.com/p/crest/wiki/FAQ}.
+\end{remark}
+
 For the code given in Example \ref{ex:codeForDemo}, one of the \texttt{input}-files has
 the following content:
 \begin{verbatim}
@@ -274,23 +280,125 @@ evaluation and the standard test value that is chosen randomly for the
 first run is kept.
 \end{remark}
 
-\subsection{Limitations of \textsc{CREST}}
+\subsection{Limitations of \textsc{CREST} and Possible Workarounds}
 
 We have created several small test cases to check what CREST can and
 what it cannot  or just partially do. We will discuss its limitations
-through the following subsections.
+through the following subsections. Here, we will only discuss
+limitations that are independent from the solving technique used. The
+theoretical and practical limitations of that are subject of section \ref{sctn:Z3}.
 
+\subsubsection{Interprocedural Analysis Possible... Or Not?}
 
+We discovered a reasonable flaw concerning interprocedural analysis.
 
-%Here: Software architecture of CREST
-%         Limitations of CREST
-%         Examples
+Consider Example \ref{ex:codeForDemo} again, and assume we replace
+line 14 by
+\begin{verbatim}
+if (f(x,y,z))
+\end{verbatim}
+where \texttt{f} is the following function:
+\begin{verbatim}
+f(int x, int y, int z){return x*y+z==0;}
+\end{verbatim}
+
+Using this instruction, \textsc{CREST} fails to produce possible
+outputs to enter the branches induced by the modified \texttt{if}
+statement.
+
+However, let us replace line 14 is instead by
+
+\begin{verbatim}
+if (f_2(x,y,z)==0)
+\end{verbatim}
+
+where \texttt{f\_2} is the function
+\begin{verbatim}
+f_2(int x, int y, int z){return x*y+z;}
+\end{verbatim}
+
+Then everything works well and \textsc{CREST} is able to state and
+solve the necessary equations to branch into the body of that \texttt{if}-statement.
+
+But what went wrong? Studying the file \texttt{szd\_execution}, it
+appears that it failed to produce the equations that need to be
+solved. We assume that this is due to the fact that during the
+analysis process, \textsc{CREST} is not able to set conditions under
+which conditions the boolean expression \texttt{x*y+z == 0} itself makes the
+\texttt{if} statement evaluate to be true. If it is directly inside
+the \texttt{if}-statement, it is clear to \textsc{CREST} how to
+evaluate it. But in the case of \texttt{f}, it fails to reason that
+\texttt{f} evaluates to
+\texttt{1}, the \textsc{C} equivalence to \texttt{true}, exactly when \texttt{x*y+z == 0}.
+This can be seen as an issue of the analysis process, and we will post
+it right after this project is handed in.
+
+\subsubsection{Double resp. Float Variables}
+
+We mentioned above the data types supported by \textsc{CREST}. What is
+missing are datatypes like \texttt{float} or \texttt{double}. Both
+\textsc{Z3} and \textsc{YICES} (for the original \textsc{CREST}) are
+able to handle that.
+
+In fact, as we will see in Section \ref{sctn:Experiments}, for a large set
+of implementations where nonlinear equations play a role inside \texttt{if}
+statements have floating point variables that determine the
+evaluation.
+%TODO: Instrument CREST Z3 to work with double or floats?
+
+\subsubsection{Arrays}
+
+Even though both \textsc{Z3} as well as \textsc{YICES} are capable of
+handling array types, \textsc{CREST} does not support that as an
+observable type. This can be seen as a flaw, even though there is a
+workaround to this: In the original \textsc{CREST} paper
+(\cite{CREST}), the authors were testing their software on the open
+source program \textsc{grep} with a very high coverage rate (60\% of
+the estimated coverable branches).
+
+In fact, one variable they were observing in the project was \texttt{keys}, which is in fact an array. In order to
+instrument \textsc{CREST} to do that, they put every entry of the
+array into the scope of \textsc{CREST} in the following way:
+
+\begin{verbatim}
+[...]
+keys = argv[optind++];
+  keycc = strlen(keys);
+  for(iii=0; iii<keycc;iii++){
+    CREST_char(tmp1);
+    keys[iii]=tmp1;
+  }
+  printf("%s\n",keys);
+[...]
+\end{verbatim}
+
+This means, that \textsc{CREST} adds in every iteration of the
+\texttt{for}-loop \texttt{tmp1} as a new variable in. From that moment on, it
+knows that keys at certain position store an observed value and then
+it can start performing evaluations based on that.
+
+\subsubsection{No Automatic Instrumentation}
+
+For \textsc{CREST}, we need to manually instrument code in order to
+clarify which variables it should observe. Depending on the size of
+the project, this can be a very long task.  Furthermore, it requires
+the program to be executable to work, i.e. one cannot utilize it for
+pure in-between test generation for units, but has either to run it once
+the project reached the executable state, or one has to write in-between executable routines for the units. Both solutions are not
+optimal in general.
+
+%TODO: Our software work
+
+%Here: Software architecture of CREST ?
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
 \section{\textsc{Z3} And the Problem of Solving Nonlinear Equations}
 \label{sctn:Z3}
+
+This section is dedicated especially to \textsc{Z3} and some theory
+around solving nonlinear equations.
 
 \subsection{Introduction to Z3}
 The tool \textsc{Z3} \cite{de2008z3}  is developed by researchers from \textsc{Microsoft} to decide -- if
@@ -505,6 +613,39 @@ robust results.
 
 \section{Experiments And Case Study}
 \label{sctn:Experiments}
+
+In this section, we will discuss some experiments on existing software
+projects done with
+\textsc{CREST}.
+
+We will start by summarizing evaluations done in \cite{CREST} and
+\cite{CRESTZ3}.
+
+After that, we will discuss project types where evaluations of
+nonlinear equations are likely to be found in \textsc{C/++} programs, and how far spread the use
+of nonlinear equations within boolean expressions is.
+
+We will conclude this section by evaluating pieces of code we found
+interesting in the context of this project.
+
+\subsection{Summary of Former Evaluations}
+
+The authors of \cite{CREST} has tested the original program on three
+different source codes:
+
+\begin{itemize}
+  \item \textsc{Vim} (\cite{oualline2001vi}), $\sim 150,000$loc
+  \item \textsc{Grep} (\url{http://www.gnu.org/software/grep/}), $\sim
+    15,000$loc
+  \item \textsc{Replace} (\cite{harrold2010siemens}), $\sim 600$loc
+\end{itemize}
+
+They were able to cover over 90\% of \textsc{Replace} within some
+minutes. Around 60\% of the branches in \textsc{Grep} were covered
+within a couple of minutes, where one could partly make improvements
+using different search strategies. For \textsc{Vim}, they only instructed \textsc{CREST} to analyze some modes of the editor, with a
+sample input. Within 2-3 hours they were able to cover up to one third
+of all branches that were reachable.
 
 %Here: Real life C programs (instructed)
 %         Outline how often we find really complicated examples in C-Code
