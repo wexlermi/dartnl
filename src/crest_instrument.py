@@ -1,10 +1,12 @@
 #!/usr/bin/python -tt
 
-#INSTRUCTIONS FOR USE: Put this file in the directory whose C files
-#                      you want to recursively instrument with CREST declarations.
-#					   Run the file by entering the command:   ./crest_instrument.py
-#					   After this is ran, all the '.c' files in the directory (recursively)
-#                      will be instrumented so they can be ran with CREST.
+# INSTRUCTIONS FOR USE:
+# Put this file in the directory whose C files you want to recursively
+# instrument with CREST declarations. Run the file by entering the 
+# command:    ./crest_instrument.py  After this is ran, all the '.c' files
+# in the directory (recursively)  will be instrumented so they can be ran with CREST.
+#
+# Also, you can instrument a specific file by typing: ./crest_instrument.py -f file_to_insrument.c
 
 
 import pdb
@@ -53,7 +55,6 @@ def forLoopCrestStr(x):
 		crestDec += 'unsigned_' + theTypeSplit[1]
 	else:
 		crestDec += theTypeSplit[0]
-	print x.group()
 	varStr = x.group(3)
 	varStr = varStr.strip()
 	varList = varStr.split(',')
@@ -111,16 +112,31 @@ def instrumentFile(fileName):
 	outputFile.close()
 
 
-#MAIN ENTRY POINT
+######		MAIN ENTRY POINT	######
+ 
+fileToInstrument = None
+numargs = len(sys.argv)
 
-path = './path'
+if (numargs == 3):
+	if (sys.argv[1] == '-f'):
+		fileToInstrument = sys.argv[2]
+		instrumentFile(fileToInstrument)
+		sys.exit()
+		
+elif (numargs == 1):
+	path = '.'
 
-#recursively get a list of all C files in this directory
-cFiles = [os.path.join(root, name)
-             for root, dirs, files in os.walk(path)
-             for name in files
-             if name.endswith(".c")]
-for f in cFiles:
-	instrumentFile(f)
-
+	#recursively get a list of all C files in this directory
+	cFiles = [os.path.join(root, name)
+				 for root, dirs, files in os.walk(path)
+				 for name in files
+				 if name.endswith(".c")]
+				 
+	for f in cFiles:
+		instrumentFile(f)
+		
+	sys.exit()
+else:
+	print "Invalid arguments."
+	sys.exit()
 
