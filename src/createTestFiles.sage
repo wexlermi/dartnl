@@ -18,7 +18,24 @@ def createTestCFile(depth, nvars, maxDeg, operators, valueRange):
     @returns:           A string representing a C-file with the desired nested loop conditions.
     @rtype:             str
     """
-    pass
+    result = "#include <stdio.h>\n\n"
+    result += "int main(int argc, char ** argv)\n{\n"
+    for i in xrange(nvars):
+        result+="int x"+str(i)+";\n"
+    result += ifGeneration(depth,nvars, maxDeg, operators, valueRange)
+    result += "\n } \n"
+    return result
+    
+
+def ifGeneration(depth, nvars, maxDeg, operators, valueRange):
+    if (depth == 0):
+        return ""
+    result = "if ( " + generateOneFormula(nvars, operators, maxDeg, valueRange) + " )\n{\n"
+    result += "printf(\"I am here at depth %d\");\n" % depth
+    result += ifGeneration(depth-1, nvars, maxDeg, operators, valueRange)
+    result += "\n}\n else\n {\n printf(\"I am at the else of depth %d\"); \n}" %depth
+    return result
+    
 
 
 def generateOneFormula(nvars, operators, maxDeg, valueRange):
@@ -27,10 +44,10 @@ def generateOneFormula(nvars, operators, maxDeg, valueRange):
     for i in xrange(0,nvars):
         variableValues.append(randint(valueRange[0],valueRange[1]))
     #Generate the random polynomial
-    P = PolynomialRing(ZZ, maxDeg,'x')
+    P = PolynomialRing(ZZ, nvars,'x')
     elem = P.random_element(maxDeg, randint(1,20))
     ourEval = elem(variableValues)
-    ourOperator = operators[randint(len(operators))]
+    ourOperator = operators[randint(0,len(operators)-1)]
     if (ourOperator == "=="):
         return str(elem)+ourOperator+str(ourEval)
     elif (ourOperator == "!="):
@@ -53,4 +70,4 @@ def generateOneFormula(nvars, operators, maxDeg, valueRange):
             temp= randint(1,100)
         return str(elem)+ourOperator+str(ourEval-temp)
 
-print generateOneFormula(5, ["==","!="], 4, (-100,100))
+print createTestCFile(5, 5, 4, ["==","!="], (-100,100))
