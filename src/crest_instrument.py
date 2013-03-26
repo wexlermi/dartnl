@@ -1,4 +1,4 @@
-#!/usr/bin/python -tt
+#!/usr/bin/python
 
 # INSTRUCTIONS FOR USE:
 # Put this file in the directory whose C files you want to recursively
@@ -77,7 +77,7 @@ def instrumentFile(fileName):
 	#get the crest.h include header
 	includeStr = '#include <crest.h>'
 	if (includeStr not in text):
-		text = includeStr + text
+		text = includeStr + "\n" + text
 	
 	#temporarily makes all declarations inside of for loop capitalized, so later analysis doesn't interfere
 	skipForLoopPattern = r'(\(\s*)(%s\s*%s)'
