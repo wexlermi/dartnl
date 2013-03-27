@@ -283,10 +283,9 @@ first run is kept.
 \subsection{Limitations of \textsc{CREST} and Possible Workarounds}
 
 We have created several small test cases to check what CREST can and
-what it cannot  or just partially do. We will discuss its limitations
-through the following subsections. Here, we will only discuss
+what it cannot -- or just partially -- do. In this section, we will only discuss
 limitations that are independent from the solving technique used. The
-theoretical and practical limitations of that are subject of section \ref{sctn:Z3}.
+theoretical and practical limitations of the solving routine is subject of section \ref{sctn:Z3}.
 
 \subsubsection{Interprocedural Analysis Possible... Or Not?}
 
@@ -344,7 +343,14 @@ In fact, as we will see in Section \ref{sctn:Experiments}, for a large set
 of implementations where nonlinear equations play a role inside \texttt{if}
 statements have floating point variables that determine the
 evaluation.
-%TODO: Instrument CREST Z3 to work with double or floats?
+
+For the original \textsc{CREST}, there exists a patch to extend its
+functionality to be able to handle also floating point variables
+(\url{https://code.google.com/p/crest/}, Issue \#15). That
+patch can unfortunately not analogously be applied to
+\textsc{CREST-Z3}. We encountered that for this instrumentation we
+would need to refactor large parts of the core of \textsc{CREST-Z3}
+and this would go beyond the scope of our project.
 
 \subsubsection{Arrays}
 
@@ -646,6 +652,57 @@ within a couple of minutes, where one could partly make improvements
 using different search strategies. For \textsc{Vim}, they only instructed \textsc{CREST} to analyze some modes of the editor, with a
 sample input. Within 2-3 hours they were able to cover up to one third
 of all branches that were reachable.
+
+In the paper about \textsc{CREST-Z3} (\cite{CRESTZ3}), one can only
+find simple proof of concepts that it extends the classical
+\textsc{CREST}. A large test on real world programs has not been made.
+
+\subsection{How Often do Nonlinear Equations Appear in Real World
+  programs}
+
+First, we were searching for \textsc{if} statements in programs that
+contain nonlinear expressions in the supported types. Our search was
+not fruitful, and only brought up a few examples that contained the
+desired property.
+
+Considering the \textsc{CRYPTO++} library
+(\url{http://www.cryptopp.com/}), we could only find a few, fairly
+simple tests of the following format:
+
+\begin{verbatim}
+rsa.cpp,
+[...]
+[168] Integer a = modn.Exponentiate(i, r);
+[169] if (a == 1)
+[170]     continue;
+[...]
+\end{verbatim}
+
+Those examples are not very hard to solve.
+
+Looking at the code of the \textsc{Singular} project
+(\cite{Singular:2012}), we encountered only one occurrence of such an
+equation. It can be found in the file \texttt{SingularLLL.c}, where
+the developers coded a version of the \textsc{LLL} algorithm %TODO:
+                                %Cite Lenstra Lenstra Lovasz
+ into the kernel. Also here, the conditions are quite simple to solve:
+\begin{verbatim}
+#ifdef GMP
+  if(abs(BigInt(2)*lambda[k][l])<=d[l+1])
+#else   // GMP
+  if(labs(2*lambda[k][l])<=d[l+1])
+    // labs is the abs-function for long ints
+#endif  // GMP
+    return;
+
+#ifdef GMP
+  BigInt q=(BigInt(2)*lambda[k][l]+d[l+1])/(BigInt(2)*d[l+1]);
+#else   // GMP
+  long q=(long int) floor(((float)(2*lambda[k][l]+d[l+1]))/(2*d[l+1]));
+#endif  // GMP
+\end{verbatim}
+
+After considering
 
 %Here: Real life C programs (instructed)
 %         Outline how often we find really complicated examples in C-Code
