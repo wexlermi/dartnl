@@ -36,7 +36,38 @@ def ifGeneration(depth, nvars, maxDeg, operators, valueRange):
     result += "\n}\n else\n {\n printf(\"I am at the else of depth %d\"); \n}" %depth
     return result
     
-
+def translatePolyIntoC(p):
+    mons = map(lambda x: str(x),p.monomials())
+    coeffs = map(lambda x: str(x), p.coefficients())
+    resMons = []
+    for i in mons:
+        entry = ""
+        j = 0
+        while True:
+            tempVar = ""
+            while j<len(i) and i[j]!='^' and i[j]!='*':
+                tempVar += i[j]
+                j = j+1
+            if j>=len(i):
+                entry+=tempVar
+                resMons.append(entry)
+                break;
+            elif i[j] == '*':
+                entry+=tempVar+"*"
+                j = j+1
+            elif i[j] == '^':
+                k = j+1
+                expon = ""
+                while k<len(i) and i[k]!='*':
+                    expon+=i[k]
+                    k=k+1
+                entry+=(tempVar+"*")*int(expon)
+                if (k<len(i)):
+                    j = k+1
+                else:
+                    entry = entry[0:len(entry)-1]
+                    j=k
+    return "+".join(map(lambda x: "("+x[0]+"*"+x[1]+")",zip(coeffs,resMons)))
 
 def generateOneFormula(nvars, operators, maxDeg, valueRange):
     #Assign values for the variables
@@ -45,29 +76,40 @@ def generateOneFormula(nvars, operators, maxDeg, valueRange):
         variableValues.append(randint(valueRange[0],valueRange[1]))
     #Generate the random polynomial
     P = PolynomialRing(ZZ, nvars,'x')
-    elem = P.random_element(maxDeg, randint(1,20))
+    elem = P.random_element(maxDeg, randint(1,(maxDeg*(maxDeg+1))//2))
     ourEval = elem(variableValues)
     ourOperator = operators[randint(0,len(operators)-1)]
     if (ourOperator == "=="):
-        return str(elem)+ourOperator+str(ourEval)
+        return translatePolyIntoC(elem)+ourOperator+str(ourEval)
     elif (ourOperator == "!="):
         temp = randint(-100,100);
         while(temp == 0):
             temp = randint(-100,100)
-        return str(elem)+ourOperator+str(ourEval+temp)
+        return translatePolyIntoC(elem)+ourOperator+str(ourEval+temp)
     elif (ourOperator == "<" or ourOperator == "<="):
         temp = 0
         if(ourOperator == "<="):
             temp = randint(0,100)
         else:
             temp= randint(1,100)
-        return str(elem)+ourOperator+str(ourEval+temp)
+        return translatePolyIntoC(elem)+ourOperator+str(ourEval+temp)
     elif (ourOperator == ">" or ourOperator == ">="):
         temp = 0
         if(ourOperator == ">="):
             temp = randint(0,100)
         else:
             temp= randint(1,100)
-        return str(elem)+ourOperator+str(ourEval-temp)
+        return translatePolyIntoC(elem)+ourOperator+str(ourEval-temp)
 
-print createTestCFile(5, 5, 4, ["==","!="], (-100,100))
+for i in xrange(1000):
+    depth = randint(1,20)
+    nvars = randint(1,20)
+    maxDeg = randint(1,20)
+    operators = ["==","!=", "<", ">", "<=", ">="]
+    valueRange = (-1000,1000)
+    try:
+        f = open("testFile_"+str(i)+"_"+str(depth)+"_"+str(nvars)+"_"+str(maxDeg)+".c","w")
+        f.write(createTestCFile(depth, nvars, maxDeg, operators,valueRange))
+        f.close()
+    except:
+        continue
