@@ -104,9 +104,9 @@ def generateOneFormula(nvars, operators, maxDeg, valueRange):
 for i in xrange(1000):
     depth = randint(1,20)
     nvars = randint(1,20)
-    maxDeg = randint(1,20)
-    operators = ["==","!=", "<", ">", "<=", ">="]
-    valueRange = (-1000,1000)
+    maxDeg = randint(1,10)
+    operators = ["=="]
+    valueRange = (-10,10)
     try:
         f = open("testFile_"+str(i)+"_"+str(depth)+"_"+str(nvars)+"_"+str(maxDeg)+".c","w")
         f.write(createTestCFile(depth, nvars, maxDeg, operators,valueRange))
