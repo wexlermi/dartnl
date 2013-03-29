@@ -22,17 +22,24 @@ def createTestCFile(depth, nvars, maxDeg, operators, valueRange):
     result += "int main(int argc, char ** argv)\n{\n"
     for i in xrange(nvars):
         result+="int x"+str(i)+";\n"
-    result += ifGeneration(depth,nvars, maxDeg, operators, valueRange)
+    variableValues = []
+    for i in xrange(0,nvars):
+        variableValues.append(randint(valueRange[0],valueRange[1]))
+    result += "//Possible solution to enter:\n"
+    for i in xrange(len(variableValues)):
+        result += "// x"+str(i)+" = "+str(variableValues[i])+"\n"
+    result += ifGeneration(depth,nvars, maxDeg, operators, variableValues)
     result += "\n } \n"
     return result
     
 
-def ifGeneration(depth, nvars, maxDeg, operators, valueRange):
+def ifGeneration(depth, nvars, maxDeg, operators, expectedResult):
     if (depth == 0):
         return ""
-    result = "if ( " + generateOneFormula(nvars, operators, maxDeg, valueRange) + " )\n{\n"
+    curFormula = generateOneFormula(nvars, operators, maxDeg, expectedResult)
+    result = "if ( " + curFormula + " )\n{\n"
     result += "printf(\"I am here at depth %d\");\n" % depth
-    result += ifGeneration(depth-1, nvars, maxDeg, operators, valueRange)
+    result += ifGeneration(depth-1, nvars, maxDeg, operators, expectedResult)
     result += "\n}\n else\n {\n printf(\"I am at the else of depth %d\"); \n}" %depth
     return result
     
@@ -69,14 +76,14 @@ def translatePolyIntoC(p):
                     j=k
     return "+".join(map(lambda x: "("+x[0]+"*"+x[1]+")",zip(coeffs,resMons)))
 
-def generateOneFormula(nvars, operators, maxDeg, valueRange):
+def generateOneFormula(nvars, operators, maxDeg, expectedResult):
     #Assign values for the variables
-    variableValues = []
-    for i in xrange(0,nvars):
-        variableValues.append(randint(valueRange[0],valueRange[1]))
+    variableValues = expectedResult
     #Generate the random polynomial
     P = PolynomialRing(ZZ, nvars,'x')
     elem = P.random_element(maxDeg, randint(1,(maxDeg*(maxDeg+1))//2))
+    while elem == 0:
+        elem = P.random_element(maxDeg, randint(1,(maxDeg*(maxDeg+1))//2))
     ourEval = elem(variableValues)
     ourOperator = operators[randint(0,len(operators)-1)]
     if (ourOperator == "=="):
@@ -105,7 +112,7 @@ for i in xrange(1000):
     depth = randint(1,20)
     nvars = randint(1,20)
     maxDeg = randint(1,10)
-    operators = ["=="]
+    operators = ["==","!=", "<", ">", "<=", ">="]
     valueRange = (-10,10)
     try:
         f = open("testFile_"+str(i)+"_"+str(depth)+"_"+str(nvars)+"_"+str(maxDeg)+".c","w")
