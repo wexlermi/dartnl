@@ -1,11 +1,15 @@
+#include <crest.h>
 #include <stdio.h>
 
 int 
 main(int argc, char **argv)
 {
 	int             x0;
+	CREST_int(x0);
 	int             x1;
+	CREST_int(x1);
 	int             x2;
+	CREST_int(x2);
 	if ((-1 * x0 * x1 * x1) + (-1 * x1 * x1 * x1) + (-2 * x1 * x1) + (2 * x2 * x2) + (-12 * 1) == -460) {
 		printf("I am here at depth 7");
 		if ((-3 * x0 * x0 * x1) + (2 * x0 * x0) + (-2 * x0 * x1) + (1 * x1 * x1) == 2824) {

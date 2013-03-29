@@ -1,11 +1,15 @@
+#include <crest.h>
 #include <stdio.h>
 
 int 
 main(int argc, char **argv)
 {
 	int             x0;
+	CREST_int(x0);
 	int             x1;
+	CREST_int(x1);
 	int             x2;
+	CREST_int(x2);
 	if ((1 * x0 * x0 * x0 * x1 * x1 * x1 * x1) + (2 * x0 * x0 * x0 * x1 * x1 * x1 * x2) + (-27 * x0 * x0 * x1 * x1 * x1 * x2 * x2) + (1 * x0 * x0 * x1 * x1 * x2 * x2 * x2) + (-2 * x0 * x1 * x1 * x1 * x2 * x2 * x2) + (-1 * x0 * x0 * x1 * x2 * x2 * x2 * x2) + (2 * x0 * x0 * x2 * x2 * x2 * x2 * x2) + (-2 * x0 * x0 * x0 * x0 * x1 * x1) + (-1 * x0 * x0 * x0 * x1 * x1 * x1) + (-4 * x0 * x0 * x0 * x0 * x0 * x2) + (1 * x0 * x0 * x0 * x0 * x1 * x2) + (1 * x1 * x1 * x1 * x1 * x1 * x2) + (-1 * x0 * x1 * x1 * x2 * x2 * x2) + (-1 * x1 * x1 * x2 * x2 * x2 * x2) + (208 * x0 * x0 * x0 * x1 * x1) + (2 * x0 * x1 * x1 * x1 * x1) + (1 * x0 * x1 * x1 * x2 * x2) + (1 * x1 * x1 * x1 * x1) + (-1 * x2 * x2 * x2 * x2) + (1 * x0 * x1 * x1) + (1 * x2 * x2 * x2) + (1 * x0 * x1) == 77064) {
 		printf("I am here at depth 11");
 		if ((1 * x0 * x0 * x0 * x0 * x0 * x0) + (2 * x2 * x2 * x2 * x2 * x2 * x2) + (1 * x0 * x0 * x1 * x2 * x2) + (2 * x0 * x0 * x1) + (1 * x0) == 116174) {

@@ -1,11 +1,15 @@
+#include <crest.h>
 #include <stdio.h>
 
 int 
 main(int argc, char **argv)
 {
 	int             x0;
+	CREST_int(x0);
 	int             x1;
+	CREST_int(x1);
 	int             x2;
+	CREST_int(x2);
 	if ((-3 * x0 * x0 * x0 * x0 * x0 * x0 * x1 * x1 * x1 * x1) + (2 * x0 * x0 * x0 * x0 * x0 * x0 * x1 * x1 * x2 * x2) + (7 * x0 * x1 * x1 * x1 * x1 * x2 * x2 * x2 * x2 * x2) + (-2 * x0 * x0 * x0 * x0 * x0 * x0 * x2 * x2 * x2) + (6 * x1 * x1 * x1 * x1 * x1 * x1 * x2 * x2 * x2) + (-2 * x0 * x0 * x0 * x0 * x0 * x2 * x2 * x2 * x2) + (-3 * x0 * x0 * x0 * x1 * x1 * x2 * x2 * x2 * x2) + (5 * x0 * x0 * x1 * x2 * x2 * x2 * x2 * x2 * x2) + (3 * x1 * x2 * x2 * x2 * x2 * x2 * x2 * x2 * x2) + (-1 * x0 * x0 * x0 * x0 * x0 * x0 * x1 * x1) + (2 * x0 * x0 * x0 * x0 * x0 * x1 * x2 * x2) + (-1 * x0 * x0 * x0 * x0 * x1 * x1 * x2 * x2) + (1 * x1 * x1 * x1 * x1 * x2 * x2 * x2 * x2) + (-1 * x0 * x1 * x1 * x1 * x1 * x1 * x2) + (-2 * x0 * x0 * x0 * x1 * x2 * x2 * x2) + (1 * x0 * x0 * x1 * x1 * x2 * x2 * x2) + (-360 * x0 * x0 * x0 * x0 * x0 * x2) + (-1 * x0 * x0 * x1 * x1 * x2 * x2) + (-1 * x2 * x2 * x2 * x2 * x2 * x2) + (-50 * x0 * x1 * x1 * x1 * x1) + (-1 * x0 * x1 * x1 * x1 * x2) + (-1 * x1 * x1 * x2 * x2 * x2) + (-1 * x1 * x1 * x1 * x1) + (1 * x0 * x1 * x1) + (-1 * x1 * x1) + (2 * 1) == 14604025736) {
 		printf("I am here at depth 18");
 		if ((1 * x0 * x0 * x0 * x0 * x0 * x0 * x0 * x1 * x1 * x1) + (1 * x1 * x1 * x1 * x1 * x1 * x1 * x1 * x1 * x1 * x2) + (122 * x0 * x0 * x0 * x0 * x1 * x1 * x1 * x2 * x2 * x2) + (2 * x0 * x0 * x0 * x0 * x1 * x1 * x2 * x2 * x2 * x2) + (-2 * x0 * x0 * x0 * x2 * x2 * x2 * x2 * x2 * x2 * x2) + (-1 * x0 * x0 * x0 * x0 * x0 * x0 * x0 * x0 * x1) + (1 * x0 * x1 * x1 * x1 * x1 * x1 * x1 * x1 * x1) + (-2 * x0 * x0 * x0 * x1 * x1 * x1 * x1 * x2 * x2) + (3 * x0 * x0 * x0 * x0 * x0 * x0 * x2 * x2 * x2) + (-1 * x0 * x0 * x0 * x1 * x2 * x2 * x2 * x2 * x2) + (4 * x0 * x1 * x1 * x1 * x2 * x2 * x2 * x2 * x2) + (-1 * x1 * x1 * x1 * x2 * x2 * x2 * x2 * x2 * x2) + (1 * x0 * x0 * x0 * x0 * x0 * x0 * x1 * x1) + (12 * x0 * x0 * x1 * x1 * x1 * x1 * x1 * x1) + (-1 * x0 * x2 * x2 * x2 * x2 * x2 * x2 * x2) + (57 * x0 * x1 * x1 * x1 * x1 * x1 * x1) + (-3 * x0 * x0 * x0 * x0 * x0 * x0 * x2) + (3 * x0 * x0 * x0 * x0 * x1 * x2 * x2) + (-3 * x0 * x0 * x0 * x1 * x1 * x2 * x2) + (1 * x1 * x1 * x1 * x2 * x2 * x2 * x2) + (1 * x1 * x1 * x2 * x2 * x2 * x2 * x2) + (1 * x1 * x2 * x2 * x2 * x2 * x2 * x2) + (1 * x0 * x0 * x1 * x1 * x1 * x2) + (-2 * x0 * x1 * x1 * x1 * x1 * x2) + (1 * x0 * x0 * x0 * x0 * x2 * x2) + (4 * x0 * x0 * x1 * x1 * x2 * x2) + (2 * x0 * x1 * x1 * x1 * x2 * x2) + (5 * x1 * x1 * x1 * x1 * x2 * x2) + (-2 * x0 * x0 * x0 * x2 * x2 * x2) + (-7 * x0 * x1 * x2 * x2 * x2 * x2) + (-2 * x1 * x2 * x2 * x2 * x2 * x2) + (6 * x0 * x0 * x0 * x0 * x0) + (-4 * x0 * x1 * x1 * x1 * x2) + (-1 * x2 * x2 * x2 * x2 * x2) + (3 * x0 * x1 * x2 * x2) + (1 * x1 * x2 * x2) + (-1 * x0 * x1) + (-3 * x2) == 19371970449) {
