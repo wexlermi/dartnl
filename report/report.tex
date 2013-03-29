@@ -333,6 +333,7 @@ This can be seen as an issue of the analysis process, and we will post
 it right after this project is handed in.
 
 \subsubsection{Double resp. Float Variables}
+\label{sbsbsctn:dblrespfloat}
 
 We mentioned above the data types supported by \textsc{CREST}. What is
 missing are datatypes like \texttt{float} or \texttt{double}. Both
@@ -660,6 +661,7 @@ find simple proof of concepts that it extends the classical
 \subsection{How Often do Nonlinear Equations Appear in Real World
   programs}
 
+\subsubsection{Ad Real World Programs According to the Limitations.}
 First, we were searching for \textsc{if} statements in programs that
 contain nonlinear expressions in the supported types. Our search was
 not fruitful, and only brought up a few examples that contained the
@@ -670,7 +672,7 @@ Considering the \textsc{CRYPTO++} library
 simple tests of the following format:
 
 \begin{verbatim}
-rsa.cpp,
+<<rsa.cpp>>
 [...]
 [168] Integer a = modn.Exponentiate(i, r);
 [169] if (a == 1)
@@ -680,29 +682,50 @@ rsa.cpp,
 
 Those examples are not very hard to solve.
 
-Looking at the code of the \textsc{Singular} project
-(\cite{Singular:2012}), we encountered only one occurrence of such an
-equation. It can be found in the file \texttt{SingularLLL.c}, where
-the developers coded a version of the \textsc{LLL} algorithm %TODO:
-                                %Cite Lenstra Lenstra Lovasz
- into the kernel. Also here, the conditions are quite simple to solve:
-\begin{verbatim}
-#ifdef GMP
-  if(abs(BigInt(2)*lambda[k][l])<=d[l+1])
-#else   // GMP
-  if(labs(2*lambda[k][l])<=d[l+1])
-    // labs is the abs-function for long ints
-#endif  // GMP
-    return;
+Looking at the source code of the computer algebra systems \textsc{Singular} (\cite{Singular:2012})
+and \textsc{GAP} (\cite{GAP4}), where we assumed to find examples,
+revealed that there is no occurrence of boolean expressions consisting
+of nonlinear expressions to be
+found in the code.
 
-#ifdef GMP
-  BigInt q=(BigInt(2)*lambda[k][l]+d[l+1])/(BigInt(2)*d[l+1]);
-#else   // GMP
-  long q=(long int) floor(((float)(2*lambda[k][l]+d[l+1]))/(2*d[l+1]));
-#endif  // GMP
+Our conclusion is that nonlinear constraints with the standard
+supported datatypes in \textsc{CREST} are very rare to be found in
+real life \textsc{C} code.
+
+\subsubsection{Ad Real World Programs outside the Limitations.}
+
+If we assume that floating point numbers would also be supported, the
+range of real world programs that contain boolean expression based on
+nonlinear equations is much higher.
+
+The first type of programs where those types of equations do appear
+are coming from the field of computer graphics. In so called ``ray
+tracing'', they are very common. The following code snippet serves as an example in what way one finds them there (taken from \url{http://www.codermind.com/articles/Raytracer-in-C++-Part-I-First-rays.html}):
+\begin{verbatim}
+[...]
+[1] double B = r.dir * dist;
+[2] double D = B*B - dist * dist + s.size * s.size; 
+[3] if (D < 0.0f) 
+[4]     return false; 
+[5] double t0 = B - sqrt(D); 
+[6] double t1 = B + sqrt(D);
+[7] bool retvalue = false;  
+[9] if ((t0 > 0.1f) && (t0 < t)) 
+[...]
 \end{verbatim}
 
-After considering
+In line 2, \texttt{D} is calculated using a nonlinear polynomial
+formula. In the next line it is checked whether the result is smaller
+than zero.
+This code snippet furthermore shows an inconvenience we would obtain
+if we would allow floating point numbers, namely the square root use
+in line 5 and 6. There are publications on ways to define square root and other
+floating point typical operations that extend \textsc{SMT-LIB},
+e.g. \cite{rummer2010smt}, and the basic preliminaries are included in
+the \textsc{SMT-LIB} version 2.0. Nonetheless, we could not find the
+full support of the arithmetic in the solvers. If one would extend
+\textsc{CREST-Z3} to also handle floating point numbers, this problem
+should also be taken into consideration.
 
 %Here: Real life C programs (instructed)
 %         Outline how often we find really complicated examples in C-Code
