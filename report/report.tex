@@ -69,7 +69,7 @@ Project for CS846}
 \maketitle
 
 \begin{abstract}
-  In this project we will explore \textsc{CREST-Z3} \cite{CRESTZ3}, an automated test case generator for C-programs. It is an extension of the tool \textsc{CREST} \cite{CREST} capable of solving nonlinear constraints in the process of generating tests. We will discuss the capabilities and the practical, as well as the theoretical limitations of this tool.
+  In this project we will explore \textsc{CREST-Z3} \cite{CRESTZ3}, an automated test case generator for C-programs. It is an extension of the tool \textsc{CREST} \cite{CREST} capable of solving nonlinear constraints in the process of generating tests. We will discuss its capabilities and the practical, as well as the theoretical limitations of this tool.
 \end{abstract}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -97,7 +97,7 @@ control flow graph -- as possible.
 \textsc{CREST}, in its original version, used a theorem prover called
 \textsc{YICES} (\cite{dutertre2006yices}) for the part of solving
 conditions to enter a branch. It is a powerful tool, yet it has a
-significant weakness: It can only deal with linear equations. This is
+significant weakness: it can only deal with linear equations. This is
 a strong restriction, as for example an equation like
 $$x^2 = 14 \mod 47$$
 for $x \in \ZZ$ could not be resolved.
@@ -112,7 +112,7 @@ considering nonlinear equations.
 Nevertheless, for the nonlinear case, in the project \textsc{CREST-Z3}, the theorem prover was replaced
 by \textsc{Microsoft}s solution \textsc{Z3}
 (\cite{de2008z3}), which can handle a broader range of equation types
-including nonlinear equations. \textsc{CREST-Z3}, its architecture and
+including nonlinear ones. \textsc{CREST-Z3}, its architecture and
 its practicality will be the subject of this paper.
 
 The paper is organized as follows. Section \ref{sctn:CRESTZ3} is
@@ -121,17 +121,17 @@ this tool, specialities about its architecture, and some limitations
 that we found.
 
 In section \ref{sctn:Z3}, we will examine those limitations a little
-bit closer from a theoretical point of view. A general overview of
+bit closer from a theoretical point of view. The limitations we will address are not just holding for this particular implementation, but are valid for any implementation that would try to do solving nonlinear constraints. A general overview of
 \textsc{Z3} will also be provided.
 
 Section \ref{sctn:Experiments} contains experiments we have done with
-\textsc{CREST-Z3}. Furthermore, we were examining types of \textsc{C/++}-projects
+\textsc{CREST-Z3}. Furthermore, we are presenting types of \textsc{C/++}-projects
 where nonlinear equations do play a role in the branching conditions
-of the code.
+of the code. We will discuss how useful the extension \textsc{CREST-Z3} in practical examples, and what extensions would be useful for the future.
 
-The last section draws a conclusion of our work. Furthermore, we will
-provide possible ways how one can improve/extend the work to make it
-either faster or more practically useful.
+The last section draws a conclusion of our work.
+
+All test files and program code we describe in this report can be found in our \textsc{GitHub} repository \url{https://github.com/wexlermi/dartnl}.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -145,7 +145,7 @@ use of \textsc{CREST-Z3} can also be applied to the original
 
 \subsection{How to use \textsc{CREST}}
 We will start by presenting how one can use \textsc{CREST} to find
-inputs in order to obtain a reasonable code coverage with its tests.
+inputs in order to obtain a reasonable code coverage.
 
 One has to manually instrument code prior of running \textsc{CREST}.
 
@@ -182,7 +182,7 @@ Let us study how this is done using the following example:
 The main steps are:
 \begin{enumerate}
   \item Including the \texttt{crest.h} header file of the
-    \textsc{CREST} project (Line 1)
+    \textsc{CREST} project. (Line 1)
    \item For all variables that appear in branching nodes of the code
      (in this case the variables $x,y,z$ and $w$), one has to instruct
      \textsc{CREST} to collect symbolic conditions with respect to
@@ -203,6 +203,7 @@ The main steps are:
 \end{remark}
 
 \begin{remark}
+  \label{rmrk:DataTypes}
   The datatypes \textsc{CREST} can handle in the current status of the
   project are: (unsigned) characters, (unsigned) integers, (unsigned) shorts.
 \end{remark}
@@ -243,9 +244,9 @@ An example of for this would be:
 $ ../bin/run_crest ./hello 10 -dfs
 \end{verbatim}
 
-After that, in the same folder some new files do appear. One class of
+Consequently, in the same folder some new files do appear. One class of
 files have a name of the form \texttt{input}${}^*$, where one can find possible input
-variables even if one has not added a \texttt{printf} line as in the
+values for the variables even if one has not added a \texttt{printf} line as in the
 code above (Line 17). Another file is called \texttt{coverage} and contains the
 nodes in the control flow graph indicated by numbers that are
 covered. Additionally, one can find a file called
@@ -268,7 +269,7 @@ the following content:
 1409925863
 \end{verbatim}
 
-That means, that $x :=-1, y:=1, z:=1, w:=1409925863$ would be possible
+Thus $x :=-1, y:=1, z:=1$ and $ w:=1409925863$ would be possible
 inputs to reach the code lines 17 and 18.
 
 \begin{remark}
@@ -287,7 +288,7 @@ what it cannot -- or just partially -- do. In this section, we will only discuss
 limitations that are independent from the solving technique used. The
 theoretical and practical limitations of the solving routine is subject of section \ref{sctn:Z3}.
 
-\subsubsection{Inability to handle the unary negative operator?}
+\subsubsection{Constraints in handling the unary negative operator.}
 During the course of our evaluation of CREST, we discovered that it is unable to handle the negative unary operator. For instance, the following code sample was unable to be solved by CREST:
 
 \begin{example}
@@ -300,6 +301,8 @@ if ( x*x*x == -8){
 }
 \end{verbatim}
 \end{example}
+
+Surprisingly, a slight alternation of the code by replacing \texttt{x*x*x == -8} by \texttt{x*x*x+8==0} makes it possible to be solved. We suspect that there might be some bug in the generation of the formula, as we checked by hand if \textsc{Z3} is able to solve this formula and encountered -- not surprisingly considering the reputation of \textsc{Z3} -- a positive answer.
 \subsubsection{Interprocedural Analysis Possible... Or Not?}
 
 We discovered a reasonable flaw concerning interprocedural analysis.
@@ -334,7 +337,7 @@ solve the necessary equations to branch into the body of that \texttt{if}-statem
 
 But what went wrong? Studying the file \texttt{szd\_execution}, it
 appears that it failed to produce the equations that need to be
-solved. We assume that this is due to the fact that during the
+solved. We suspect that this is due to the fact that during the
 analysis process, \textsc{CREST} is not able to set conditions under
 which conditions the boolean expression \texttt{x*y+z == 0} itself makes the
 \texttt{if} statement evaluate to be true. If it is directly inside
@@ -345,13 +348,11 @@ evaluate it. But in the case of \texttt{f}, it fails to reason that
 This can be seen as an issue of the analysis process, and we will post
 it right after this project is handed in.
 
-\subsubsection{Double resp. Float Variables}
+\subsubsection{Double resp. Float Variables.}
 \label{sbsbsctn:dblrespfloat}
 
-We mentioned above the data types supported by \textsc{CREST}. What is
-missing are datatypes like \texttt{float} or \texttt{double}. Both
-\textsc{Z3} and \textsc{YICES} (for the original \textsc{CREST}) are
-able to handle that.
+We mentioned above (Remark \ref{rmrk:DataTypes}) the data types supported by \textsc{CREST}. What is
+missing are datatypes like \texttt{float} or \texttt{double}.
 
 In fact, as we will see in Section \ref{sctn:Experiments}, for a large set
 of implementations where nonlinear equations play a role inside \texttt{if}
@@ -366,7 +367,7 @@ patch can unfortunately not analogously be applied to
 would need to refactor large parts of the core of \textsc{CREST-Z3}
 and this would go beyond the scope of our project.
 
-\subsubsection{Arrays}
+\subsubsection{Arrays.}
 
 Even though both \textsc{Z3} as well as \textsc{YICES} are capable of
 handling array types, \textsc{CREST} does not support that as an
@@ -397,7 +398,7 @@ This means, that \textsc{CREST} adds in every iteration of the
 knows that keys at certain position store an observed value and then
 it can start performing evaluations based on that.
 
-\subsubsection{No Automatic Instrumentation}
+\subsubsection{No Automatic Instrumentation.}
 
 For \textsc{CREST}, we need to manually instrument code in order to
 clarify which variables it should observe. Depending on the size of
@@ -407,9 +408,10 @@ pure in-between test generation for units, but has either to run it once
 the project reached the executable state, or one has to write in-between executable routines for the units. Both solutions are not
 optimal in general.
 
-%TODO: Our software work
+Fortunately, the instrumentation part can be automized. We have written a script that does that job. It can be found in the \textsc{GitHub} repository of our project (\texttt{src/crest\_instrument.py}).
 
-%Here: Software architecture of CREST ?
+
+%Here: Software architecture of CREST ? (See Xiaoye's question)
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -422,7 +424,7 @@ around solving nonlinear equations.
 
 \subsection{Introduction to Z3}
 The tool \textsc{Z3} \cite{de2008z3}  is developed by researchers from \textsc{Microsoft} to decide -- if
-possible -- ``Satisfiability modulo theories'' (abbreviated SMT)
+possible -- ``Satisfiability Modulo Theories'' (abbreviated SMT)
 problems. These problems are given in first order logic and can be
 seen as an extension to the satisfiability problem in predicate logic
 (SAT) by introducing datatypes like numbers and their respective
@@ -451,7 +453,7 @@ those problems.
   $x,y$ and $z$ satisfying the given conditions.
 \end{example}
 
-\textsc{Z3} can be included as a library to C/++ source code and one
+\textsc{Z3} can be included as a library to \textsc{C}/\textsc{++} source code and one
 can call the theorem prover from there. This is very handy as one does
 not have to parse an input to a tool and parse the output back, but
 just can call the respective functions inside his/her own functions.
@@ -479,7 +481,7 @@ Nonetheless, one can always try to find solutions and cancel the
 computations after a certain amount of time.
 
 Given a set of polynomial equations, the status quo to find solutions
-is to calculate as a first step a so called Gr\"obner basis of this system (originated
+is to calculate as a first step a so called Gr\"obner basis of this system (originated by B. Buchberger in his PhD Thesis, consider e.g.
 in \cite{buchberger1970algorithmisches}). This can be seen as a
 simplification of the system, which leads in the case of the existence
 of only finitely many solutions directly to the solutions. Inside the
@@ -506,8 +508,7 @@ In order to illustrate where one reaches those limitations, we
 considered the following code:
 
 \begin{verbatim}
-int main(int argc, char *argv[])
-{
+int main(int argc, char *argv[]){
   int w;
   int x;
   int y;
@@ -561,7 +562,7 @@ several factors that play a role how fast an algorithm computes this
 Gr\"obner basis. One of them is how ``smart'' it is implemented. This
 computation can take either minutes or hours, depending on the implementation.
 
-Of course, one can also try to solve those equation using
+Of course, one can also try to solve those equations directly using \textsc{Singular} or other 
 state-of-the-art computer algebra systems. We observed that those will
 not provide the easy solution that we know about this system.
 
@@ -607,7 +608,7 @@ those helps from outside appears to be a very hard task.
 \textsc{Z3} is of course not the only \textsc{SMT}-solver that is
 available, yet it belongs to the group of the most powerful
 ones. Other tools that are capable of solving complex SMTs and that use the
-same input as \textsc{Z3} are
+same input as \textsc{Z3} are for instance
 \begin{itemize}
   \item \textsc{Alt-Ergo} (\cite{bobotalt}) and
   \item \textsc{CVC4} (\cite{barrett2011cvc4}).
@@ -650,7 +651,7 @@ interesting in the context of this project.
 
 \subsection{Summary of Former Evaluations}
 
-The authors of \cite{CREST} has tested the original program on three
+The author of \cite{CREST} has tested the original program on three
 different source codes:
 
 \begin{itemize}
@@ -660,11 +661,11 @@ different source codes:
   \item \textsc{Replace} (\cite{harrold2010siemens}), $\sim 600$loc
 \end{itemize}
 
-They were able to cover over 90\% of \textsc{Replace} within some
+He was able to cover over 90\% of \textsc{Replace} within some
 minutes. Around 60\% of the branches in \textsc{Grep} were covered
 within a couple of minutes, where one could partly make improvements
-using different search strategies. For \textsc{Vim}, they only instructed \textsc{CREST} to analyze some modes of the editor, with a
-sample input. Within 2-3 hours they were able to cover up to one third
+using different search strategies. For \textsc{Vim}, he only instructed \textsc{CREST} to analyze some modes of the editor, with a
+sample input. Within 2-3 hours he was able to cover up to one third
 of all branches that were reachable.
 
 In the paper about \textsc{CREST-Z3} (\cite{CRESTZ3}), one can only
@@ -675,13 +676,13 @@ find simple proof of concepts that it extends the classical
   programs}
 
 \subsubsection{Ad Real World Programs According to the Limitations.}
-First, we were searching for \textsc{if} statements in programs that
+First, we were searching for \texttt{if}-statements in programs that
 contain nonlinear expressions in the supported types. Our search was
 not fruitful, and only brought up a few examples that contained the
 desired property.
 
 Considering the \textsc{CRYPTO++} library
-(\url{http://www.cryptopp.com/}), we could only find a few, fairly
+(\url{http://www.cryptopp.com/}, a \textsc{C++} library containing all kinds of algorithms from the field of cryptography), we could only find a few, fairly
 simple tests of the following format:
 
 \begin{verbatim}
@@ -744,11 +745,24 @@ Another area where we found boolean expressions based on nonlinear equations in 
 
 Summa summarum one can say that considering nonlinear constraints, in practice it is only reasonable to additionally consider them if also floating point numbers are supported. For the supported datatypes, one rarely finds code where those play a significant, non-trivial role.
 
+\subsection{Some Empirical Experiments on the Solving Ability of \textsc{CREST-Z3}}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \section{Conclusion and Future Work}
 \label{sctn:Conclusion}
+
+There are several conclusions we can draw in this report.
+
+The first one is that \textsc{CREST(-Z3)} as a tool has to be made more robust. Some of the limitations we have found (like the one connected to interprocedural analysis), are flaws coming directly from the analysis process.
+
+In order to really extend the functionality of \textsc{CREST} for real world programs, one also has to consider floating point numbers as possible data types, as for those nonlinear equations in boolean are more likely to appear. For the supported types, the original \textsc{CREST} suffices on our set of real world programs.
+
+Concerning the question of which problem solver to use, we have seen that there are limitations from theory. Nevertheless, computer algebra systems contain the most recent algorithms coming from mathematicians all over the world. The solving part could be partially outsourced instead of using solvers implemented in \textsc{Z3} or other software projects. This would in our opinion increase the quality of those solvers in terms of equations they are able to solve.
+
+A possible future task could be to deal with the constraints of \textsc{CREST(-Z3)}. Resolving them is not trivial. Furthermore, one could make the solving process more flexible, i.e. the solver replacable without any instrumentation, and possibly having several by hand at once.
+
+Another future task is related to the question whether we are content with just node coverage on the control flow graph or not. \textsc{CREST-Z3} is performing only node coverage, and maybe it would be interesting to also perform some criteria like prime path coverage (see \cite{ammann2008introduction}). As with considering paths, we also gain more constraints on our variables, it might lead to an easier way to solve for those variables or prove the infeasibility. It would lead to a more flexible way of test generation that would be of interest for academia as well as for industry.
 
 %Here: Extension to other programming languages? Or even Computer algebra systems?
 %         Feasible for real world, as conditions do not get very complicated in general
