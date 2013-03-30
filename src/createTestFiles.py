@@ -1,6 +1,8 @@
 import random
 from collections import namedtuple
 import pdb
+import os
+
 def evaluateTerm(term, varValues):
 	coef = term['coef']
 	degList = term['degList']
@@ -98,12 +100,13 @@ def generateIfStmt(eqnSys, whichEqn):
 	result += '\t' * (whichEqn + 1) + '}\n'
 	return result
 
-def createCFile( numEquations, numVars, varBound, maxDeg):
+def createCFile(directory, numEquations, numVars, varBound, maxDeg):
 	randomSystem = createRandomNonlinearSystem(numEquations, numVars, 7, 1)
 	ifString = generateIfStmt(randomSystem, 0)
 	uniqueid = random.randint(1, 10000)
 	filename = 'testfile_' + str(numEquations) + '_' + str(numVars) + '_'  + str(varBound) + '_' + str(maxDeg) + '_' + str(uniqueid) + '.c'
-	outputFile = open(filename, 'w')
+	outputFile = open(os.path.join(directory, filename), 'w')
 	outputFile.write('#include <stdio.h>\n\nint main()\n{\n' + printDeclareVarStr(numVars) + '\n' + ifString + '}')
-
+	outputFile.close()
+	return filename
 #createCFile(5, 3, 10, 2)
