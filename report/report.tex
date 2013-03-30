@@ -287,6 +287,19 @@ what it cannot -- or just partially -- do. In this section, we will only discuss
 limitations that are independent from the solving technique used. The
 theoretical and practical limitations of the solving routine is subject of section \ref{sctn:Z3}.
 
+\subsubsection{Inability to handle the unary negative operator?}
+During the course of our evaluation of CREST, we discovered that it is unable to handle the negative unary operator. For instance, the following code sample was unable to be solved by CREST:
+
+\begin{example}
+\label{ex:codeForDemo}
+\begin{verbatim}
+
+if ( x*x*x == -8){
+    printf("GOAL %d\n", x);
+    return 1;
+}
+\end{verbatim}
+\end{example}
 \subsubsection{Interprocedural Analysis Possible... Or Not?}
 
 We discovered a reasonable flaw concerning interprocedural analysis.
