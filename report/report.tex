@@ -712,8 +712,8 @@ range of real world programs that contain boolean expression based on
 nonlinear equations is much higher.
 
 The first type of programs where those types of equations do appear
-are coming from the field of computer graphics. In so called ``ray
-tracing'', they are very common. The following code snippet serves as an example in what way one finds them there (taken from \url{http://www.codermind.com/articles/Raytracer-in-C++-Part-I-First-rays.html}):
+are coming from the field of computer graphics. In the technique called ``ray
+tracing'' (\cite{glassner1989introduction}) for example, they are very common. The following code snippet serves as an example in what way one finds them there (taken from \url{http://www.codermind.com/articles/Raytracer-in-C++-Part-I-First-rays.html}):
 \begin{verbatim}
 [...]
 [1] double B = r.dir * dist;
@@ -727,12 +727,12 @@ tracing'', they are very common. The following code snippet serves as an example
 [...]
 \end{verbatim}
 
-In line 2, \texttt{D} is calculated using a nonlinear polynomial
+In line 2, the variable \texttt{D} is calculated using a nonlinear polynomial
 formula. In the next line it is checked whether the result is smaller
-than zero.
+than zero or not.
 This code snippet furthermore shows an inconvenience we would obtain
 if we would allow floating point numbers, namely the square root use
-in line 5 and 6. There are publications on ways to define square root and other
+in line 5 and 6 and the boolean expression based on it in line 9. There are publications on ways to define square root and other
 floating point typical operations that extend \textsc{SMT-LIB},
 e.g. \cite{rummer2010smt}, and the basic preliminaries are included in
 the \textsc{SMT-LIB} version 2.0. Nonetheless, we could not find the
@@ -740,9 +740,9 @@ full support of the arithmetic in the solvers. If one would extend
 \textsc{CREST-Z3} to also handle floating point numbers, this problem
 should also be taken into consideration.
 
-%Here: Real life C programs (instructed)
-%         Outline how often we find really complicated examples in C-Code
-%         Feasibility of instructing programs for CREST
+Another area where we found boolean expressions based on nonlinear equations in floating point numbers were algorithms coming from finance. There is an interesting collection of \textsc{C++} programs in \cite{odegaard2003financial}. The way they appear there mostly is in converging constraints and in early termination of a program if a certain formula is fulfilled. The same holds for algorithms coming from numerics; consider for example the project \textsc{LAMMPS} (Mollecular Dynamics Simulator, \cite{plimpton2007lammps}).
+
+Summa summarum one can say that considering nonlinear constraints, in practice it is only reasonable to additionally consider them if also floating point numbers are supported. For the supported datatypes, one rarely finds code where those play a significant, non-trivial role.
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
