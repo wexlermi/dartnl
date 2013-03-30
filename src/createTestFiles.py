@@ -68,21 +68,53 @@ def printEquation(equation):
 	output += ' == ' + str(total)
 	return output
 
-def ifGeneration(eqnSys):
-	n = len(eqnSys)
-    if (n == 0):
-        return ""
-    firstEquation = eqnSys
-    result = ''
-    result = "if ( " + generateOneFormula(nvars, operators, maxDeg, valueRange) + " )\n{\n"
-    result += "printf(\"I am here at depth %d\");\n" % depth
-    result += ifGeneration(depth-1, nvars, maxDeg, operators, valueRange)
-    result += "\n}\n else\n {\n printf(\"I am at the else of depth %d\"); \n}" %depth
-    return result
+def printVarValueString( varValues ):
+	output = 'x0 = ' + str(varValues[0])
+	for i in range(1, len(varValues)):
+		output += ', x' + str(i) + '= ' + str(varValues[i])
+	return output
+	
+def cVarString( n ):
+	output = 'x0 = %d'
+	for i in range(n):
+		output += ', x' + str(i) + '= %d'
+	return output
 
-randomSystem = createRandomNonlinearSystem(5, 10, 2)
-ifString = generateIfStmt(randomSystem)
-system = createRandomNonlinearSystem(3,5,3)
-for equation in system:
-	print printEquation(equation)
-    
+def cVarStringOther(n):
+	output = 'x0'
+	for i in range(n):
+		output += ', x' + str(i)
+	return output
+	
+def printDeclareVarStr( n ):
+	output = ''
+	for i in range(n):
+		output += '\tint x%d;\n' % i
+	return output
+
+def generateIfStmt(eqnSys, whichEqn):
+	n = len(eqnSys)
+	if (whichEqn == len(eqnSys)):
+		return ""
+	print whichEqn
+	eqn = eqnSys[whichEqn]
+	varValues = eqn['varValues']
+	result = ''
+	#result = 'if ( ' + printEquation(eqn) + ' ) //' + printVarValueString(varValues) + '\n{\n'
+	result = '\t' * (whichEqn + 1) + 'if ( ' + printEquation(eqn) + ' ) //' + printVarValueString(varValues) + '\n' + '\t' * (whichEqn + 1) + '{\n'
+	#result += '\t' + '\t' * (whichEqn + 1) + 'printf("Solved the if at depth %d. Solution: ' % (whichEqn + 1) + cVarString(n) + '");\n'
+	result += '\t' + '\t' * (whichEqn + 1) + 'printf("Solved the if at depth %d. Solution: ' % (whichEqn + 1) + cVarString(n) + '" , ' + cVarStringOther(n)+ ');\n'
+	result += generateIfStmt(eqnSys, whichEqn + 1)
+	result += '\t' * (whichEqn + 1) + '}\n'
+	#result += "\n}\n else\n {\n printf(\"I am at the else of depth %d "); \n}" % whichEqn
+	return result
+
+n = 5
+randomSystem = createRandomNonlinearSystem(n, 7, 2)
+ifString = generateIfStmt(randomSystem, 0)
+outputFile = open('output.c', 'w')
+outputFile.write('#include <stdio.h>\n\nint main()\n{\n' + printDeclareVarStr(n) + '\n' + ifString + '\n}')
+#print ifString
+#system = createRandomNonlinearSystem(3,5,3)
+#for equation in system:
+#print printEquation(equation)
