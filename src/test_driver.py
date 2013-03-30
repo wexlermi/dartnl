@@ -53,12 +53,10 @@ def file_len(fname):
 
 #Parse the C file name, returning a dictionary containing the parameters of the C file   
 def parseCFileName(cFile):
-	filename=cFile[ :len(cFile)-2]
-	varibles = filename.split("_")
+	splitList = filename.split("_")
 	ret = {}
-	ret["depth"] = varibles[1]
-	ret["nvar"] = varibles[1]
-	ret["maxdeg"] = varibles[3]
+	ret["numEquations"] = int(splitList[1])
+	ret["numVars"] = int(splitList[2])
 	return ret
 	
 			 
@@ -86,9 +84,16 @@ testDir = './test_files'
 crestDir = './crest-z3-master'
 varBound = 10
 maxDeg = 2
+depthData = {}
 cFiles = makeCFiles()
 for cFile in cFiles:
-	processFile(cFile)
+	parameters = parseCFileName(cFile)
+	numEquations = parameters['numEquations']
+	numVars = parameters['numVars']
+	metrics = runFileThroughCrestAndGetStats(cFile)
+	timing = metrics["timing"]
+	coverage = metrics["coverage"]
+	
 #subprocess.Popen(["cd", testDir])
 #ssubprocess.Popen(["export", 'LD_LIBRARY_PATH=' + os.path.join(crestDir + "/z3/lib")])
 

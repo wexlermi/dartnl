@@ -18,28 +18,39 @@ def evaluate(exprTermList, varValues):
 		total += evaluateTerm(exprTermList[i], varValues)
 	return total
 	
-def createTerm(n, varBound, maxDeg, ):
+def createTerm(numVars, varBound, totalDeg ):
+	#pdb.set_trace()
 	coef = random.randint(1, varBound)
-	degList = []
-	for i in range(n):
-		degList.append(random.randint(0, maxDeg))
+	degList = [0] * numVars
+	numVarsToInclude = random.randint(1, numVars)
+	varsToInclude = random.sample(set(range(numVars)), numVarsToInclude)
+	random.shuffle(varsToInclude)
+	i = 0
+	while totalDeg >= 1:
+		if i == len(varsToInclude) - 1:
+			degList[varsToInclude[i]] = totalDeg
+			break
+		degList[varsToInclude[i]] = random.randint(1, totalDeg)
+		totalDeg -= degList[varsToInclude[i]]
+		i += 1
+		
 	return {"coef": coef, "degList": degList}
 	
-def createRandomEquation(varValues, varBound, maxDeg):
+def createRandomEquation(varValues, varBound, totalDeg):
 	n = len(varValues)
 	exprTermList = []
 	for i in range(n):
-		exprTermList.append(createTerm(n, varBound, maxDeg))
+		exprTermList.append(createTerm(n, varBound, totalDeg))
 	total = evaluate(exprTermList, varValues)	
 	return {"exprTermList": exprTermList, "varValues": varValues, "total": total}
 
-def createRandomNonlinearSystem( numEquations, numVars, varBound, maxDeg):
+def createRandomNonlinearSystem( numEquations, numVars, varBound, totalDeg):
 	varValues = []
 	for i in range(numVars):
 		varValues.append(random.randint(1, varBound))
 	equationList = []
 	for i in range(numEquations):
-		equationList.append(createRandomEquation(varValues, varBound, maxDeg))
+		equationList.append(createRandomEquation(varValues, varBound, totalDeg))
 	return equationList
 	
 def printTerm(term):
@@ -70,13 +81,13 @@ def printVarValueString( varValues ):
 	
 def cVarString( n ):
 	output = 'x0 = %d'
-	for i in range(n):
+	for i in range(1, n):
 		output += ', x' + str(i) + ' = %d'
 	return output
 
 def cVarStringOther(n):
 	output = 'x0'
-	for i in range(n):
+	for i in range(1, n):
 		output += ', x' + str(i)
 	return output
 	
@@ -100,13 +111,14 @@ def generateIfStmt(eqnSys, whichEqn):
 	result += '\t' * (whichEqn + 1) + '}\n'
 	return result
 
-def createCFile(directory, numEquations, numVars, varBound, maxDeg):
-	randomSystem = createRandomNonlinearSystem(numEquations, numVars, 7, 1)
+def createCFile(directory, numEquations, numVars, varBound, totalDeg):
+	randomSystem = createRandomNonlinearSystem(numEquations, numVars, varBound, totalDeg)
 	ifString = generateIfStmt(randomSystem, 0)
 	uniqueid = random.randint(1, 10000)
-	filename = 'testfile_' + str(numEquations) + '_' + str(numVars) + '_'  + str(varBound) + '_' + str(maxDeg) + '_' + str(uniqueid) + '.c'
+	filename = 'testfile_' + str(numEquations) + '_' + str(numVars) + '_'  + str(varBound) + '_' + str(totalDeg) + '_' + str(uniqueid) + '.c'
 	outputFile = open(os.path.join(directory, filename), 'w')
 	outputFile.write('#include <stdio.h>\n\nint main()\n{\n' + printDeclareVarStr(numVars) + '\n' + ifString + '}')
 	outputFile.close()
 	return filename
-#createCFile(5, 3, 10, 2)
+
+createCFile('.', 5, 3, 10, 3)
