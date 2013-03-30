@@ -31,12 +31,12 @@ def createRandomEquation(varValues, varBound, maxDeg):
 	total = evaluate(exprTermList, varValues)	
 	return {"exprTermList": exprTermList, "varValues": varValues, "total": total}
 
-def createRandomNonlinearSystem( n, varBound, maxDeg ):
+def createRandomNonlinearSystem( numEquations, numVars, varBound, maxDeg):
 	varValues = []
-	for i in range(n):
+	for i in range(numVars):
 		varValues.append(random.randint(1, varBound))
 	equationList = []
-	for i in range(n):
+	for i in range(numEquations):
 		equationList.append(createRandomEquation(varValues, varBound, maxDeg))
 	return equationList
 	
@@ -98,9 +98,12 @@ def generateIfStmt(eqnSys, whichEqn):
 	result += '\t' * (whichEqn + 1) + '}\n'
 	return result
 
-def createCFile( n, varBound, maxDeg):
-	randomSystem = createRandomNonlinearSystem(n, 7, 1)
+def createCFile( numEquations, numVars, varBound, maxDeg):
+	randomSystem = createRandomNonlinearSystem(numEquations, numVars, 7, 1)
 	ifString = generateIfStmt(randomSystem, 0)
-	filename = 'testfile_' + str(n) + '_' + str(varBound) + '_' + str(maxDeg) + '.c'
+	uniqueid = random.randint(1, 10000)
+	filename = 'testfile_' + str(numEquations) + '_' + str(numVars) + '_'  + str(varBound) + '_' + str(maxDeg) + '_' + str(uniqueid) + '.c'
 	outputFile = open(filename, 'w')
-	outputFile.write('#include <stdio.h>\n\nint main()\n{\n' + printDeclareVarStr(n) + '\n' + ifString + '}')
+	outputFile.write('#include <stdio.h>\n\nint main()\n{\n' + printDeclareVarStr(numVars) + '\n' + ifString + '}')
+
+#createCFile(5, 3, 10, 2)
