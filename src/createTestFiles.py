@@ -1,46 +1,43 @@
 import random
 from collections import namedtuple
-
-def evaluateTerm(term, varValues, isFirstTerm):
+import pdb
+def evaluateTerm(term, varValues):
 	coef = term['coef']
 	degList = term['degList']
-	neg = term['negative']
 	product = coef
 	for i in range(len(degList)):
 		product *= varValues[i] ** degList[i]
-	if neg and not isFirstTerm:
-		product *= -1
 	return product
 	
 def evaluate(exprTermList, varValues):
-	total = evaluateTerm(exprTermList[0], varValues, True)
+	#pdb.set_trace()
+	total = 0
 	for i in range(len(exprTermList)):
-		total += evaluateTerm(exprTermList[i], varValues, False)
+		total += evaluateTerm(exprTermList[i], varValues)
 	return total
-		#varValue = random.randint(1, varBound)
-		#evaluateExpr(va
+	
 def createTerm(n, varBound, maxDeg, ):
 	coef = random.randint(1, varBound)
 	degList = []
 	for i in range(n):
 		degList.append(random.randint(0, maxDeg))
-	negative = random.choice([True, False])
-	return {"coef": coef, "degList": degList, "negative": negative}
+	return {"coef": coef, "degList": degList}
 	
-def createRandomEquation(n, varBound, maxDeg):
+def createRandomEquation(varValues, varBound, maxDeg):
+	n = len(varValues)
 	exprTermList = []
 	for i in range(n):
 		exprTermList.append(createTerm(n, varBound, maxDeg))
-	varValues = []
-	for i in range(n):
-		varValues.append(random.randint(1, varBound))
 	total = evaluate(exprTermList, varValues)	
 	return {"exprTermList": exprTermList, "varValues": varValues, "total": total}
 
 def createRandomNonlinearSystem( n, varBound, maxDeg ):
+	varValues = []
+	for i in range(n):
+		varValues.append(random.randint(1, varBound))
 	equationList = []
 	for i in range(n):
-		equationList.append(createRandomEquation(n, varBound, maxDeg))
+		equationList.append(createRandomEquation(varValues, varBound, maxDeg))
 	return equationList
 	
 def printTerm(term):
@@ -59,12 +56,7 @@ def printEquation(equation):
 	total = equation['total']
 	output = printTerm(exprTermList[0])
 	for i in range(1, len(exprTermList)):
-		negative = exprTermList[i]['negative']
-		if (negative):
-			output += ' - '
-		else:
-			output += ' + '
-		output += printTerm(exprTermList[i])
+		output += ' + ' + printTerm(exprTermList[i])
 	output += ' == ' + str(total)
 	return output
 
@@ -77,7 +69,7 @@ def printVarValueString( varValues ):
 def cVarString( n ):
 	output = 'x0 = %d'
 	for i in range(n):
-		output += ', x' + str(i) + '= %d'
+		output += ', x' + str(i) + ' = %d'
 	return output
 
 def cVarStringOther(n):
@@ -100,21 +92,16 @@ def generateIfStmt(eqnSys, whichEqn):
 	eqn = eqnSys[whichEqn]
 	varValues = eqn['varValues']
 	result = ''
-	#result = 'if ( ' + printEquation(eqn) + ' ) //' + printVarValueString(varValues) + '\n{\n'
 	result = '\t' * (whichEqn + 1) + 'if ( ' + printEquation(eqn) + ' ) //' + printVarValueString(varValues) + '\n' + '\t' * (whichEqn + 1) + '{\n'
-	#result += '\t' + '\t' * (whichEqn + 1) + 'printf("Solved the if at depth %d. Solution: ' % (whichEqn + 1) + cVarString(n) + '");\n'
-	result += '\t' + '\t' * (whichEqn + 1) + 'printf("Solved the if at depth %d. Solution: ' % (whichEqn + 1) + cVarString(n) + '" , ' + cVarStringOther(n)+ ');\n'
+	result += '\t' + '\t' * (whichEqn + 1) + 'printf("Solved the if at depth %d. Solution: ' % (whichEqn + 1) + cVarString(n) + '\\n" , ' + cVarStringOther(n)+ ');\n'
 	result += generateIfStmt(eqnSys, whichEqn + 1)
 	result += '\t' * (whichEqn + 1) + '}\n'
-	#result += "\n}\n else\n {\n printf(\"I am at the else of depth %d "); \n}" % whichEqn
 	return result
 
-n = 5
-randomSystem = createRandomNonlinearSystem(n, 7, 2)
-ifString = generateIfStmt(randomSystem, 0)
-outputFile = open('output.c', 'w')
-outputFile.write('#include <stdio.h>\n\nint main()\n{\n' + printDeclareVarStr(n) + '\n' + ifString + '\n}')
-#print ifString
-#system = createRandomNonlinearSystem(3,5,3)
-#for equation in system:
-#print printEquation(equation)
+def createCFile( n, varBound, maxDeg):
+	n = 4
+	randomSystem = createRandomNonlinearSystem(n, 7, 1)
+	ifString = generateIfStmt(randomSystem, 0)
+	filename = 'testfile_' + str(n) + '_' + str(varBound) + '_' + str(maxDeg) + '.c'
+	outputFile = open(filename, 'w')
+	outputFile.write('#include <stdio.h>\n\nint main()\n{\n' + printDeclareVarStr(n) + '\n' + ifString + '}')
