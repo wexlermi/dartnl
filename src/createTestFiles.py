@@ -99,7 +99,6 @@ def generateIfStmt(eqnSys, whichEqn):
 	return result
 
 def createCFile( n, varBound, maxDeg):
-	n = 4
 	randomSystem = createRandomNonlinearSystem(n, 7, 1)
 	ifString = generateIfStmt(randomSystem, 0)
 	filename = 'testfile_' + str(n) + '_' + str(varBound) + '_' + str(maxDeg) + '.c'
