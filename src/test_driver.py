@@ -4,26 +4,73 @@ import time
 import re
 import pdb
 
+import threading
+from os import kill
+from signal import alarm, signal, SIGALRM, SIGKILL
+from subprocess import PIPE, Popen
+
+def run(args, cwd = None, shell = False, kill_tree = True, timeout = -1, env = None):
+    '''
+    Run a command with a timeout after which it will be forcibly
+    killed.
+    '''
+    class Alarm(Exception):
+        pass
+    def alarm_handler(signum, frame):
+        raise Alarm
+    p = Popen(args, shell = shell, cwd = cwd, stdout = PIPE, stderr = PIPE, env = env)
+    if timeout != -1:
+        signal(SIGALRM, alarm_handler)
+        alarm(timeout)
+    try:
+        stdout, stderr = p.communicate()
+        if timeout != -1:
+            alarm(0)
+    except Alarm:
+        pids = [p.pid]
+        if kill_tree:
+            pids.extend(get_process_children(p.pid))
+        for pid in pids:
+            # process might have died before getting to this line
+            # so wrap to avoid OSError: no such process
+            try: 
+                kill(pid, SIGKILL)
+            except OSError:
+                pass
+        return -9, '', ''
+    return p.returncode, stdout, stderr
+
+def get_process_children(pid):
+    p = Popen('ps --no-headers -o pid --ppid %d' % pid, shell = True,
+              stdout = PIPE, stderr = PIPE)
+    stdout, stderr = p.communicate()
+    return [int(p) for p in stdout.split()]
+
+
 def runFileThroughCrestAndGetStats(cFile):
-	print(cFile)
-	crestc_output = subprocess.check_output([os.path.join(crestDir, "bin/crestc"), os.path.join(testDir,cFile)], timeout=theTimeout)
-	print(crestc_output)
-	start = time.time()*1000
-	exportZ3LibCmd = 'export LD_LIBRARY_PATH=/home/xiaoye/study/crest-z3-master/z3/lib'
+	cFile = 'testfile_2_3_10_1_1011.c'
+	crestc_command = os.path.join(crestDir, "bin/crestc") + ' ' + os.path.join(testDir,cFile)
+	crestc_output = run(crestc_command, shell=True, timeout = 3)[2]
+
+	start = time.time()
+	exportZ3LibCmd = 'export LD_LIBRARY_PATH=./crest-z3-master/z3/lib'
 	run_crest_command = exportZ3LibCmd + ' && ' + os.path.join(crestDir, "bin/run_crest") + ' ' + os.path.join(testDir,cFile[ :len(cFile)-2]) + ' 10 -dfs'
-	run_crest_output = subprocess.check_output(run_crest_command, shell=True, timeout=theTimeout)
-	#run_crest_output = subprocess.check_output([os.path.join(crestDir, "bin/run_crest"), os.path.join(testDir,cFile[ :len(cFile)-2]), "10", "-dfs"], shell=True, timeout=theTimeout)
-	end = time.time()*1000
+
+	print cFile
+	run_crest_output = run(run_crest_command, shell=True, timeout=40)
+	ifOutput = run_crest_output[1]
+	iterationOutput = run_crest_output[2]
+	print ifOutput
+	print iterationOutput
 	
-	#print(crestc_output)
-	print(run_crest_output)
+	end = time.time()
 	
-	results =  parseCrestOutput(crestc_output,run_crest_output)
+	results =  parseCrestOutput(crestc_output, run_crest_output)
 	metrics = {}
 	metrics["timing"] = end - start
 	metrics["coverage"] = results
 	return metrics
-	
+
 #TODO
 #get the coverage ratio of each test case
 def parseCrestOutput(crestc_output,run_crest_output):
@@ -91,8 +138,6 @@ def getAverageDepth():
 	f.close()
 
 
-
-
 #Parse the C file name, returning a dictionary containing the parameters of the C file   
 def parseCFileName(filename):
 	splitList = filename.split("_")
@@ -101,13 +146,11 @@ def parseCFileName(filename):
 	ret["numVars"] = int(splitList[2])
 	return ret
 	
-			 
 #TODO : AGGREGATE, CHANGE VARIABLES, EXPERIMENT
 
-
 theTimeout = 20   #in seconds	
-testDir = '/home/xiaoye/study/test_files'
-crestDir = '/home/xiaoye/study/crest-z3-master'
+testDir = './test_files'
+crestDir = './crest-z3-master'
 #varBound = 10
 #maxDeg = 2
 #depthData = {}
@@ -116,6 +159,7 @@ cFiles = [name
 			 for name in files
 			 if name.endswith(".c")]
 
+i = 1
 for cFile in cFiles:
 	parameters = parseCFileName(cFile)
 	numEquations = parameters['numEquations']
@@ -123,7 +167,6 @@ for cFile in cFiles:
 	metrics = runFileThroughCrestAndGetStats(cFile)
 	timing = metrics["timing"]
 	coverage = metrics["coverage"]
-
 	print(metrics)
 	
 	aggregatedByDepth(numEquations, timing, coverage)
@@ -132,5 +175,4 @@ for cFile in cFiles:
 
 getAverageDepth()
 getAverageNvar()
-
 
