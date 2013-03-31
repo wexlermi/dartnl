@@ -106,7 +106,7 @@ def generateIfStmt(eqnSys, whichEqn):
 	varValues = eqn['varValues']
 	result = ''
 	result = '\t' * (whichEqn + 1) + 'if ( ' + printEquation(eqn) + ' ) //' + printVarValueString(varValues) + '\n' + '\t' * (whichEqn + 1) + '{\n'
-	result += '\t' + '\t' * (whichEqn + 1) + 'printf("Solved the if at depth %d. Solution: ' % (whichEqn + 1) + cVarString(n) + '\\n" , ' + cVarStringOther(n)+ ');\n'
+	result += '\t' + '\t' * (whichEqn + 1) + 'printf("Solved the if at depth %d.\\n");\n'  #Solution: ' % (whichEqn + 1) + cVarString(n) + '\\n" , ' + cVarStringOther(n)+ ');\n'
 	result += generateIfStmt(eqnSys, whichEqn + 1)
 	result += '\t' * (whichEqn + 1) + '}\n'
 	return result
