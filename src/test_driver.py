@@ -48,7 +48,7 @@ def get_process_children(pid):
 
 
 def runFileThroughCrestAndGetStats(cFile):
-	cFile = 'testfile_2_3_10_1_1011.c'
+	#cFile = 'testfile_2_3_10_1_1011.c'
 	crestc_command = os.path.join(crestDir, "bin/crestc") + ' ' + os.path.join(testDir,cFile)
 	crestc_output = run(crestc_command, shell=True, timeout = 3)[2]
 
@@ -65,7 +65,7 @@ def runFileThroughCrestAndGetStats(cFile):
 	
 	end = time.time()
 	
-	results =  parseCrestOutput(crestc_output, run_crest_output)
+	results =  parseCrestOutput(crestc_output, iterationOutput)
 	metrics = {}
 	metrics["timing"] = end - start
 	metrics["coverage"] = results
@@ -82,23 +82,20 @@ def parseCrestOutput(crestc_output,run_crest_output):
 	#print covereds
 	for covered in covereds:
 		maxBranch = max(maxBranch, int(covered[8:]))
-	ratio = float(maxBranch)/float(branches)
-	return ratio
+	return maxBranch
 
-
-table_depth = {} #table by depth to store the total time
+nvar = 5
+depth = 5
+table_time = [[0 for x in xrange(nvar)] for x in xrange(depth)]  #table by depth to store the total time
 
 #aggregated timing and coverage for each depth 
-def aggregatedByDepth(depth, timing, coverage):
-	if depth not in table_depth:
-		table_depth[depth] = [timing, coverage, 1]
-	else:
-		table_depth[depth][0] += timing
-		table_depth[depth][1] += coverage
-		table_depth[depth][2] += 1
-
+'''
+def aggregatedTime(Depth, numVar, timing):
+		table_time[Depth-1][numVar-1] = timing 
+'''
 #aggregated timing and coverage for each nvar
-table_nvar = {}
+table_coverage = [[0 for x in xrange(nvar)] for x in xrange(depth)]
+'''
 def aggregatedByNvar(nvar, timing, coverage):
 	if nvar not in table_nvar:
 		table_nvar[nvar] = [timing, coverage, 1]
@@ -107,34 +104,31 @@ def aggregatedByNvar(nvar, timing, coverage):
 		table_nvar[nvar][1] += coverage
 		table_nvar[nvar][2] += 1
 
-
+'''
 #get the average run time and coverage for each depth
-def getAverageNvar():
-	f = open("result_nvar.txt", "w")
-	f.write("nvars\ttime\tcoverage\n")
-	for key in table_nvar:
-		timing = table_nvar[key][0]
-		num_file = table_nvar[key][2]
-		coverage = table_nvar[key][1]
-		average_timing = timing/num_file
-		average_coverage = coverage/num_file
-		line = str(key) +'\t'+str(average_timing)+'\t'+str(average_coverage)+'\n'
-		f.write(line)
+def getAverageTime():
+	
+	f = open("result_time.txt", "w")
+	f.write("\t%20s"%"1"+"%20s"%"2"+"%20s"%"3"+"%20s"%"4"+"%20s"%"5"+"\n")
+	for i in xrange(depth):
+		f.write(str(i+1)+"\t")
+		for j in xrange(nvar):
+			timing = table_time[i][j]/3
+			f.write("%20s" % str(timing))
+		f.write("\n")
 	f.close()
 
 
 #get the average run time and coverage for each nvar
-def getAverageDepth():
-	f = open("result_depth.txt", "w")
-	f.write("depth\ttime\tcoverage\n")
-	for key in table_depth:
-		timing = table_depth[key][0]
-		num_file = table_depth[key][2]
-		coverage = table_depth[key][1]
-		average_timing = timing/num_file
-		average_coverage = coverage/num_file
-		line = str(key) +'\t'+str(average_timing)+'\t'+str(average_coverage)+'\n'
-		f.write(line)
+def getAverageCoverage():
+	f = open("result_coverage.txt", "w")
+	f.write("\t%10s"%"1"+"%10s"%"2"+"%10s"%"3"+"%10s"%"4"+"%10s"%"5"+"\n")
+	for i in xrange(depth):
+		f.write(str(i+1)+"\t")
+		for j in xrange(nvar):
+			coverage = table_coverage[i][j]/3
+			f.write("%10s"% str(coverage))
+		f.write("\n")
 	f.close()
 
 
@@ -168,11 +162,13 @@ for cFile in cFiles:
 	timing = metrics["timing"]
 	coverage = metrics["coverage"]
 	print(metrics)
-	
-	aggregatedByDepth(numEquations, timing, coverage)
-	aggregatedByNvar(numVars, timing, coverage)
+	key = str(numEquations)+'_'+str(numVars)
+	table_time[numEquations-1][numVars-1] += timing
+	table_coverage[numEquations-1][numVars-1]+=coverage
+	#aggregated(key, timing, coverage)
+	#aggregatedByNvar(numVars, timing, coverage)
 
 
-getAverageDepth()
-getAverageNvar()
+getAverageTime()
+getAverageCoverage()
 
