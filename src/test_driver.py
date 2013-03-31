@@ -4,30 +4,19 @@ import time
 import re
 import pdb
 
-def timeout_command(command, timeout):
-	"""call shell-command and either return its output or kill it
-	if it doesn't normally exit within timeout seconds and return None"""
-	import subprocess, datetime, os, time, signal
-	start = datetime.datetime.now()
-	process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-	while process.poll() is None:
-		time.sleep(0.1)
-		now = datetime.datetime.now()
-		if (now - start).seconds> timeout:
-			os.kill(process.pid, signal.SIGKILL)
-			os.waitpid(-1, os.WNOHANG)
-			return None
-	return process.stdout.read()
-
 def runFileThroughCrestAndGetStats(cFile):
+	print(cFile)
+	crestc_output = subprocess.check_output([os.path.join(crestDir, "bin/crestc"), os.path.join(testDir,cFile)], timeout=theTimeout)
+	print(crestc_output)
 	start = time.time()*1000
-	#with open('crestcOut.txt', 'w') as output_f:
-	crestc_output = timeout_command([os.path.join(crestDir, "bin/crestc"), cFile], timeout)
-	run_crest_output = timeout_command([os.path.join(crestDir, "bin/run_crest"), './' + cFile[ :len(cFile)-2], "10", "-dfs"], timeout)
+	exportZ3LibCmd = 'export LD_LIBRARY_PATH=./crest-z3-master/z3/lib'
+	run_crest_command = exportZ3LibCmd + ' && ' + os.path.join(crestDir, "bin/run_crest") + ' ' + os.path.join(testDir,cFile[ :len(cFile)-2]) + ' 10 -dfs'
+	run_crest_output = subprocess.check_output(run_crest_command, shell=True, timeout=theTimeout)
+	#run_crest_output = subprocess.check_output([os.path.join(crestDir, "bin/run_crest"), os.path.join(testDir,cFile[ :len(cFile)-2]), "10", "-dfs"], shell=True, timeout=theTimeout)
 	end = time.time()*1000
 	
-	print crestc_output
-	print run_crest_output
+	#print(crestc_output)
+	print(run_crest_output)
 	
 	#results =  parseCrestOutput(run_crest_output)
 	metrics = {}
@@ -39,14 +28,14 @@ def runFileThroughCrestAndGetStats(cFile):
 #get the coverage ratio of each test case
 def parseCrestOutput(crestcOut,coverage):
 	f = open(crestcOut, "r")
-        temp = re.findall(r'\w+\sbranches',f.read())
-	print temp
-        tks = temp[0].split(" ")
-        branches = tks[0]
-        covered = file_len(coverage)
-        ratio = float(covered)/float(branches)
+	temp = re.findall(r'\w+\sbranches',f.read())
+	print(temp)
+	tks = temp[0].split(" ")
+	branches = tks[0]
+	covered = file_len(coverage)
+	ratio = float(covered)/float(branches)
 	f.close()
-        return ratio
+	return ratio
 
 def file_len(fname):
 	with open(fname) as f:
@@ -73,7 +62,7 @@ def aggregate():
 		f.write(line)
 	f.close()
 
-timeout = 20   #in seconds	
+theTimeout = 20   #in seconds	
 testDir = './test_files'
 crestDir = './crest-z3-master'
 varBound = 10
@@ -84,18 +73,22 @@ cFiles = [name
 			 for name in files
 			 if name.endswith(".c")]
 #print cFiles
-pdb.set_trace()
+#pdb.set_trace()
+i = 1
 for cFile in cFiles:
+	if i==2:
+		break
 	parameters = parseCFileName(cFile)
 	numEquations = parameters['numEquations']
 	numVars = parameters['numVars']
 	metrics = runFileThroughCrestAndGetStats(cFile)
 	timing = metrics["timing"]
 	#coverage = metrics["coverage"]
-	print metrics
+	print(metrics)
+	i += 1
 	
 #subprocess.Popen(["cd", testDir])
-#ssubprocess.Popen(["export", 'LD_LIBRARY_PATH=' + os.path.join(crestDir + "/z3/lib")])
+
 
 """
 cFiles = [os.path.join(root, name)
