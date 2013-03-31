@@ -101,12 +101,11 @@ def generateIfStmt(eqnSys, whichEqn):
 	n = len(eqnSys)
 	if (whichEqn == len(eqnSys)):
 		return ""
-	print whichEqn
 	eqn = eqnSys[whichEqn]
 	varValues = eqn['varValues']
 	result = ''
 	result = '\t' * (whichEqn + 1) + 'if ( ' + printEquation(eqn) + ' ) //' + printVarValueString(varValues) + '\n' + '\t' * (whichEqn + 1) + '{\n'
-	result += '\t' + '\t' * (whichEqn + 1) + 'printf("Solved the if at depth %d.\\n");\n'  #Solution: ' % (whichEqn + 1) + cVarString(n) + '\\n" , ' + cVarStringOther(n)+ ');\n'
+	result += '\t' + '\t' * (whichEqn + 1) + 'printf("Solved the if at depth %d.\\n");\n' % (whichEqn + 1) #Solution: ' % (whichEqn + 1) + cVarString(n) + '\\n" , ' + cVarStringOther(n)+ ');\n'
 	result += generateIfStmt(eqnSys, whichEqn + 1)
 	result += '\t' * (whichEqn + 1) + '}\n'
 	return result
@@ -121,4 +120,4 @@ def createCFile(directory, numEquations, numVars, varBound, totalDeg):
 	outputFile.close()
 	return filename
 
-createCFile('.', 5, 3, 10, 3)
+#createCFile('.', 5, 3, 10, 3)

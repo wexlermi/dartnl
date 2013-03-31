@@ -2,7 +2,7 @@ import subprocess
 import os
 import time
 import re
-import createTestFiles
+import pdb
 
 def timeout_command(command, timeout):
 	"""call shell-command and either return its output or kill it
@@ -26,10 +26,13 @@ def runFileThroughCrestAndGetStats(cFile):
 	run_crest_output = timeout_command([os.path.join(crestDir, "bin/run_crest"), './' + cFile[ :len(cFile)-2], "10", "-dfs"], timeout)
 	end = time.time()*1000
 	
-	results =  parseCrestOutput(run_crest_output)
+	print crestc_output
+	print run_crest_output
+	
+	#results =  parseCrestOutput(run_crest_output)
 	metrics = {}
 	metrics["timing"] = end - start
-	metrics["coverage"] = results
+	#metrics["coverage"] = results
 	return metrics
 	
 #TODO
@@ -52,7 +55,7 @@ def file_len(fname):
 	return i + 1
 
 #Parse the C file name, returning a dictionary containing the parameters of the C file   
-def parseCFileName(cFile):
+def parseCFileName(filename):
 	splitList = filename.split("_")
 	ret = {}
 	ret["numEquations"] = int(splitList[1])
@@ -70,29 +73,26 @@ def aggregate():
 		f.write(line)
 	f.close()
 
-def processFile(cFile):
-	
-
-def makeCFiles():
-	cFiles = []
-	for numEquations in range(1, 10):
-		for numVars in range(1, 10):	
-			cFiles.append(createTestFiles.createCFile(testDir, numEquations, numVars, varBound, maxDeg))
-	return cFiles
 timeout = 20   #in seconds	
 testDir = './test_files'
 crestDir = './crest-z3-master'
 varBound = 10
 maxDeg = 2
 depthData = {}
-cFiles = makeCFiles()
+cFiles = [name
+			 for root, dirs, files in os.walk(testDir)
+			 for name in files
+			 if name.endswith(".c")]
+#print cFiles
+pdb.set_trace()
 for cFile in cFiles:
 	parameters = parseCFileName(cFile)
 	numEquations = parameters['numEquations']
 	numVars = parameters['numVars']
 	metrics = runFileThroughCrestAndGetStats(cFile)
 	timing = metrics["timing"]
-	coverage = metrics["coverage"]
+	#coverage = metrics["coverage"]
+	print metrics
 	
 #subprocess.Popen(["cd", testDir])
 #ssubprocess.Popen(["export", 'LD_LIBRARY_PATH=' + os.path.join(crestDir + "/z3/lib")])
