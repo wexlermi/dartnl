@@ -784,24 +784,21 @@ Using the aforementioned script, we generated a test-set of 75 C files, which co
 
 Table 1 represents the timings when running CREST on our test-set using DFS (depth-first-search) search-mode.
 
-
 \begin{table}[htbp]
-\caption{}
+\caption{DFS timings (in seconds)}
 \begin{center}
-\begin{tabular}{|l|r|r|r|r|r|l|}
+\begin{tabular}{|r|r|r|r|r|l|}
 \hline
- & \multicolumn{1}{l|}{} & \multicolumn{1}{l|}{Num-variables} & \multicolumn{1}{l|}{} & \multicolumn{1}{l|}{} & \multicolumn{1}{l|}{} &  \\ \hline
- & \multicolumn{1}{l|}{} & 1 & 2 & 3 & 4 & \multicolumn{1}{r|}{5} \\ \hline
-Nested-depth & 1 & 0.131 & 0.163 & 0.112 & 2.482 & \multicolumn{1}{r|}{1.19} \\ \hline
- & 2 & 0.129 & 0.147 & 26.738 & 26.751 & ---- \\ \hline
- & 3 & 0.111 & 0.133 & 6.354 & 27.138 & ---- \\ \hline
- & 4 & 0.124 & 0.135 & 27.068 & \multicolumn{1}{l|}{----} & \multicolumn{1}{r|}{26.789} \\ \hline
- & 5 & 0.167 & 0.244 & 1.393 & \multicolumn{1}{l|}{----} & ---- \\ \hline
+\backslashbox{Depth}{Num-vars} & 1 & 2 & 3 & 4 & \multicolumn{1}{r|}{5} \\ \hline
+1 & 0.131 & 0.163 & 0.112 & 2.482 & \multicolumn{1}{r|}{1.19} \\ \hline
+2 & 0.129 & 0.147 & 26.738 & 26.751 & ---- \\ \hline
+3 & 0.111 & 0.133 & 6.354 & 27.138 & ---- \\ \hline
+4 & 0.124 & 0.135 & 27.068 & \multicolumn{1}{l|}{----} & \multicolumn{1}{r|}{26.789} \\ \hline
+5 & 0.167 & 0.244 & 1.393 & \multicolumn{1}{l|}{----} & ---- \\ \hline
 \end{tabular}
 \end{center}
 \label{DFS timings (in seconds)}
 \end{table}
-
 
 \begin{figure}[!t]
 \centering
@@ -816,18 +813,17 @@ Figure 1 gives a graphical view of Table 1. The checkered squares of Figure 1 re
 \begin{table}[htbp]
 \caption{DFS branch-coverage-ratio}
 \begin{center}
-\begin{tabular}{|l|r|r|r|r|r|r|}
+\begin{tabular}{|r|r|r|r|r|r|}
 \hline
- & \multicolumn{1}{l|}{} & \multicolumn{1}{l|}{Num-vars} & \multicolumn{1}{l|}{} & \multicolumn{1}{l|}{} & \multicolumn{1}{l|}{} & \multicolumn{1}{l|}{} \\ \hline
- & \multicolumn{1}{l|}{} & 1 & 2 & 3 & 4 & 5 \\ \hline
-Depth & 1 & 1 & 1 & 1 & 1 & 1 \\ \hline
- & 2 & 0.75 & 0.75 & 0.25 & 0.25 & 0 \\ \hline
- & 3 & 0.667 & 0.667 & 0.667 & 0.333 & 0 \\ \hline
- & 4 & 0.625 & 0.75 & 0.25 & 0 & 0 \\ \hline
- & 5 & 0.6 & 0.7 & 0.6 & 0 & 0 \\ \hline
+\backslashbox{Depth}{Num-vars} & 1 & 2 & 3 & 4 & 5 \\ \hline
+1 & 1 & 1 & 1 & 1 & 1 \\ \hline
+2 & 0.75 & 0.75 & 0.25 & 0.25 & 0 \\ \hline
+3 & 0.667 & 0.667 & 0.667 & 0.333 & 0 \\ \hline
+4 & 0.625 & 0.75 & 0.25 & 0 & 0 \\ \hline
+5 & 0.6 & 0.7 & 0.6 & 0 & 0 \\ \hline
 \end{tabular}
 \end{center}
-\label{DFS branch-coverage-ratio}
+\label{DFS timings (in seconds)}
 \end{table}
 
 
