@@ -3,6 +3,11 @@
 \usepackage{amssymb} % AMS Fonts
 \usepackage{amsmath} % AMSLaTeX
 \usepackage{url}
+\usepackage[pdftex]{graphicx}
+\usepackage{slashbox}
+
+% Compile only with pdfLaTeX
+\usepackage[pdftex]{graphicx}
 
 \newcommand{\ZZ}{{\mathbb{Z}}}
 \newcommand{\QQ}{{\mathbb{Q}}}
@@ -69,7 +74,7 @@ Project for CS846}
 \maketitle
 
 \begin{abstract}
-  In this project we will explore \textsc{CREST-Z3} \cite{CRESTZ3}, an automated test case generator for C-programs. It is an extension of the tool \textsc{CREST} \cite{CREST} capable of solving nonlinear constraints in the process of generating tests. We will discuss its capabilities and the practical, as well as the theoretical limitations of this tool.
+  In this project, we will explore \textsc{CREST-Z3} \cite{CRESTZ3}, an automated test case generator for C-programs. It is an extension of the tool \textsc{CREST} \cite{CREST} capable of solving non-linear constraints in the process of generating tests. We will discuss its capabilities, and the practical and theoretical limitations of this tool.
 \end{abstract}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -83,13 +88,12 @@ the programming language \textsc{C}. The main principle of that tool
 appears in the literature as \textbf{Concolic Testing} (this terminology appeared
 for the first time in the paper \cite{sen2005cute}).
 
-Informally speaking, concolic testing refers the concrete
-execution of the program given either random or specifically chosen
+Informally speaking, concolic testing refers to the concrete
+execution of a program, given either random or specifically chosen
 values for the variables. During this execution, one collects symbolic
-conditions on the
-variables in order to reach code lines whenever a branch occurs
+conditions on the variables in order to reach code lines in which a branch occurs
 (e.g. induced by an \texttt{if}-statement). Those conditions are fed
-to a theorem prover in order to solve for possible variable values to
+to a theorem prover, in order to solve for possible variable values to
 enter each branch. With that, people are trying to generate test sets
 that satisfy the best coverage of the code -- in terms of nodes in the
 control flow graph -- as possible.
@@ -98,7 +102,7 @@ control flow graph -- as possible.
 \textsc{YICES} (\cite{dutertre2006yices}) for the part of solving
 conditions to enter a branch. It is a powerful tool, yet it has a
 significant weakness: it can only deal with linear equations. This is
-a strong restriction, as for example an equation like
+a strong restriction, since, for example, an equation like
 $$x^2 = 14 \mod 47$$
 for $x \in \ZZ$ could not be resolved.
 Also in other concolic testing tools like \textsc{CUTE}
@@ -106,18 +110,17 @@ Also in other concolic testing tools like \textsc{CUTE}
 \textsc{EXE} (\cite{cadar2008exe}) and \textsc{PathCrawler}
 (\cite{williams2005pathcrawler}), only linear equations are solvable.
 
-This is the case for a good reason, as we will see in section \ref{sctn:Z3} where we will discuss computational limitations we have
-considering nonlinear equations.
+This is the case for a good reason, as we will see in section \ref{sctn:Z3} where we discuss computational limitations we have considering nonlinear equations.
 
 Nevertheless, for the nonlinear case, in the project \textsc{CREST-Z3}, the theorem prover was replaced
-by \textsc{Microsoft}s solution \textsc{Z3}
-(\cite{de2008z3}), which can handle a broader range of equation types
+by \textsc{Microsoft'}s solution \textsc{Z3}
+(\cite{de2008z3}), which can handle a broader range of equation types,
 including nonlinear ones. \textsc{CREST-Z3}, its architecture and
 its practicality will be the subject of this paper.
 
-The paper is organized as follows. Section \ref{sctn:CRESTZ3} is
+The paper is organized as follows: Section \ref{sctn:CRESTZ3} is
 dedicated to \textsc{CREST}(-\textsc{Z3}). We will see how one can use
-this tool, specialities about its architecture, and some limitations
+this tool, specifications of its architecture, and some limitations
 that we found.
 
 In section \ref{sctn:Z3}, we will examine those limitations a little
@@ -127,7 +130,7 @@ bit closer from a theoretical point of view. The limitations we will address are
 Section \ref{sctn:Experiments} contains experiments we have done with
 \textsc{CREST-Z3}. Furthermore, we are presenting types of \textsc{C/++}-projects
 where nonlinear equations do play a role in the branching conditions
-of the code. We will discuss how useful the extension \textsc{CREST-Z3} in practical examples, and what extensions would be useful for the future.
+of the code. We will discuss how useful the extension \textsc{CREST-Z3} is in practical examples, and what extensions would be useful for the future.
 
 The last section draws a conclusion of our work.
 
@@ -145,7 +148,7 @@ use of \textsc{CREST-Z3} can also be applied to the original
 
 \subsection{How to use \textsc{CREST}}
 We will start by presenting how one can use \textsc{CREST} to find
-inputs in order to obtain a reasonable code coverage.
+inputs in order to obtain reasonable code coverage.
 
 One has to manually instrument code prior of running \textsc{CREST}.
 
@@ -154,6 +157,7 @@ Let us study how this is done using the following example:
 \begin{example}
 \label{ex:codeForDemo}
 \begin{verbatim}
+
 [1]   #include <crest.h>
 [2]   #include <stdio.h>
 [3]  
@@ -198,7 +202,7 @@ The main steps are:
 
 \begin{remark}
   This example already contains nonlinear constraints inside the
-  \texttt{if}-statements and therefore serves as an example how
+  \texttt{if}-statements and therefore serves as an example of how
   \textsc{CREST-Z3} extends the functionality of the classical \textsc{CREST}.
 \end{remark}
 
@@ -233,13 +237,14 @@ variables for maximal code coverage, one has to run the tool
     flow graph. Possible options here are in the set
 \begin{center}
 $\{$\texttt{dfs}, \texttt{cfg}, \texttt{random},
-    \texttt{uniform\_random}, \texttt{random\_input}$\}$
+    \texttt{uniform\_random}, \texttt{random\_input}, 
+    \texttt{cfg\_baseline}, \texttt{hybrid}$\}$
 \end{center}
 \end{itemize}
 For details on the respective search strategies consider
 \cite{CREST}.
 
-An example of for this would be:
+An example of this would be:
 \begin{verbatim}
 $ ../bin/run_crest ./hello 10 -dfs
 \end{verbatim}
@@ -286,13 +291,12 @@ first run is kept.
 We have created several small test cases to check what CREST can and
 what it cannot -- or just partially -- do. In this section, we will only discuss
 limitations that are independent from the solving technique used. The
-theoretical and practical limitations of the solving routine is subject of section \ref{sctn:Z3}.
+theoretical and practical limitations of the solving routine is the subject of section \ref{sctn:Z3}.
 
 \subsubsection{Constraints in handling the unary negative operator.}
 During the course of our evaluation of CREST, we discovered that it is unable to handle the negative unary operator. For instance, the following code sample was unable to be solved by CREST:
 
 \begin{example}
-\label{ex:codeForDemo}
 \begin{verbatim}
 
 if ( x*x*x == -8){
@@ -360,12 +364,12 @@ statements have floating point variables that determine the
 evaluation.
 
 For the original \textsc{CREST}, there exists a patch to extend its
-functionality to be able to handle also floating point variables
-(\url{https://code.google.com/p/crest/}, Issue \#15). That
-patch can unfortunately not analogously be applied to
-\textsc{CREST-Z3}. We encountered that for this instrumentation we
-would need to refactor large parts of the core of \textsc{CREST-Z3}
-and this would go beyond the scope of our project.
+functionality to be able to also handle floating point variables
+(\url{https://code.google.com/p/crest/}, Issue \#15). Unfortunately, that
+patch cannot analogously be applied to
+\textsc{CREST-Z3}. We discovered that in order to obtain this functionality, we
+would need to refactor large parts of the core of \textsc{CREST-Z3},
+and this would go above and beyond the scope of our project.
 
 \subsubsection{Arrays.}
 
@@ -393,8 +397,8 @@ keys = argv[optind++];
 [...]
 \end{verbatim}
 
-This means, that \textsc{CREST} adds in every iteration of the
-\texttt{for}-loop \texttt{tmp1} as a new variable in. From that moment on, it
+This means that \textsc{CREST} adds, in every iteration of the
+\texttt{for}-loop, \texttt{tmp1} as a new variable. From that moment on, it
 knows that keys at certain position store an observed value and then
 it can start performing evaluations based on that.
 
@@ -402,13 +406,12 @@ it can start performing evaluations based on that.
 
 For \textsc{CREST}, we need to manually instrument code in order to
 clarify which variables it should observe. Depending on the size of
-the project, this can be a very long task.  Furthermore, it requires
+the project, this can be a very time-consuming task.  Furthermore, it requires
 the program to be executable to work, i.e. one cannot utilize it for
-pure in-between test generation for units, but has either to run it once
-the project reached the executable state, or one has to write in-between executable routines for the units. Both solutions are not
-optimal in general.
+pure in-between test generation for units, but either has to run it after
+the project has reached the executable state, or one has to write in-between executable routines for the units. Both solutions are not optimal in general.
 
-Fortunately, the instrumentation part can be automized. We have written a script that does that job. It can be found in the \textsc{GitHub} repository of our project (\texttt{src/crest\_instrument.py}).
+To solve this issue, we have written a script that automates this instrumentation process. It can be found in the \textsc{GitHub} repository of our project (\texttt{src/crest\_instrument.py}).
 
 
 %Here: Software architecture of CREST ? (See Xiaoye's question)
@@ -423,83 +426,80 @@ This section is dedicated especially to \textsc{Z3} and some theory
 around solving nonlinear equations.
 
 \subsection{Introduction to Z3}
-The tool \textsc{Z3} \cite{de2008z3}  is developed by researchers from \textsc{Microsoft} to decide -- if
+The tool \textsc{Z3} \cite{de2008z3}  was developed by researchers from \textsc{Microsoft} to decide -- if
 possible -- ``Satisfiability Modulo Theories'' (abbreviated SMT)
 problems. These problems are given in first order logic and can be
 seen as an extension to the satisfiability problem in predicate logic
-(SAT) by introducing datatypes like numbers and their respective
-operations. A standard to represent those formulas in a automatically
+(SAT), by introducing datatypes like numbers and their respective
+operations. A standard to represent those formulas in an automatically
 readable form was developed in the \textsc{SMT-LIB} project  \cite{barrett2010smt}.
 The developers of \textsc{Z3} are using this standard as their
 internal representation.
 
 We will refrain from providing a detailed description of SMT problems
-and their representation as this would exceed the scope of this
+and their representation, as this would exceed the scope of this
 report. But the following example will present the basic structure of
-those problems.
+those problems:
 
 \begin{example}
   Given the variables $x,y,z$, which we consider to
-  be integer numbers. An SMT solver could answer the question whether
-  a solution for $x,y$ and $z$ does exist given the following
+  be integer numbers, an SMT solver could answer the question of whether or not
+  a solution for $x,y$ and $z$ exists, given the following
   constraints:
   \begin{enumerate}
     \item $x \neq y$
     \item $xy+x^2y=z$
     \item $|z|<10$.
   \end{enumerate}
-  The solver would either state that he cannot solve this problem, or
-  no solution does exist (provable), or it would provide values for
-  $x,y$ and $z$ satisfying the given conditions.
+  The solver would either state that it cannot solve this problem, or
+  that no solution exists (provable), or it would provide values for
+  $x,y$ and $z$ that satisfy the given conditions.
 \end{example}
 
-\textsc{Z3} can be included as a library to \textsc{C}/\textsc{++} source code and one
-can call the theorem prover from there. This is very handy as one does
-not have to parse an input to a tool and parse the output back, but
-just can call the respective functions inside his/her own functions.
+\textsc{Z3} can be included as a library to \textsc{C}/\textsc{++} source code, and one
+can call the theorem prover from there. This is very handy, as one does
+not have to parse any input to a tool and parse the output back, but instead can
+just can call the respective functions inside his own functions.
 
 The source code of \textsc{Z3} was recently (September 2012) published
 by Microsoft (\url{http://z3.codeplex.com/}), so we could examine the
 techniques the developers used to handle the nonlinear equations we
 are looking for inside their code. We will go into more detail on that
-after we discussed some theory behind nonlinear equations.
+after we discuss some theory behind nonlinear equations.
 
 \subsection{Theoretical Limitations}
 
 There are some theoretical limitations given considering the problem
 of solving nonlinear equations.
 
-Given the following scenario: consider integer variables $x_1, \ldots,
+We are given the following scenario: consider integer variables $x_1, \ldots,
 x_n, n \in \NN$, and a boolean expression inside an if statement that
 evaluates to true if and only if a polynomial given in those variables
 is zero for some choice of $x_1, \ldots, x_n$. Finding a solution for
-the $x_i$ is the so called Hilbert's 10th problem
+the $x_i$ is the so-called "Hilbert's tenth problem"
 \cite{davis1984hilbert}, which was proven to be undecidable
 \cite{matiyasevich1970enumerable}.
 
-Nonetheless, one can always try to find solutions and cancel the
+Despite the intractability of this problem, one can always try to find solutions and cancel the
 computations after a certain amount of time.
 
 Given a set of polynomial equations, the status quo to find solutions
-is to calculate as a first step a so called Gr\"obner basis of this system (originated by B. Buchberger in his PhD Thesis, consider e.g.
-in \cite{buchberger1970algorithmisches}). This can be seen as a
+is to first calculate the Gr\"obner basis of this system (originated by B. Buchberger in his PhD Thesis, consider e.g. in \cite{buchberger1970algorithmisches}). This can be seen as a
 simplification of the system, which leads in the case of the existence
 of only finitely many solutions directly to the solutions. Inside the
-source code of \textsc{Z3} we could also find an implementation an
+source code of \textsc{Z3}, we could also find an implementation of an
 algorithm to calculate those bases.
 
-But there is one problem to this approach. Calculating a Gr\"obner
-basis has double exponential complexity, independent from the choice
-of the algorithm to compute it (\cite{mayr1982complexity}). Therefore,
-computations can take a long time and the output may be the most
-simple one, but is still hard to utilize for finding the
-solutions. The next subsection will provide an example to illustrate
+But there is one problem to this approach: calculating a Gr\"obner
+basis has double exponential complexity, independent of the choice
+of the algorithm chosen to compute it (\cite{mayr1982complexity}). Therefore,
+computations can take a long time, and the output may be quite simple, but is still hard to utilize it for finding the solutions. The next subsection will provide an example to illustrate
 this fact.
 
 Finding solutions to nonlinear equations is also heavily studied in current
 research. Almost every computer algebra system provides a
 functionality to solve systems of equations, but there are still
-plenty of examples where those solvers do fail. Thus one is also
+plenty of examples where those solvers do fail. Thus, one is also
 limited by the possibilities current research provides.
 
 \subsection{Practically Hard Problems}
@@ -529,13 +529,13 @@ In order to cover all branches, one could use as input $(x,y,z,w) :=
 (2,3,5,7)$. \textsc{Z3} is not able to solve it. We stopped the
 calculation after a couple of hours.
 
-Let us study the reason why it fails. \textsc{Z3} will try to compute
+Let us examine the reason why it fails. \textsc{Z3} will try to compute
 a Gr\"obner basis of the ideal generated by
 \begin{eqnarray*}
   x^2y^3z^2 - 2700, \quad x^2yw + y^2w^2 - 525, \quad xyw + y^3w^2,
 \end{eqnarray*}
 and based on that result, it will try to solve the equation. As said,
-solving for integer values is in general undecidable.
+solving for integer values is, in general, undecidable.
 
 Let us look at the Gr\"obner basis for this system, which we
 calculated using the computer algebra system \textsc{Singular}
@@ -579,18 +579,18 @@ z = 338*RootOf(-15138703125*w^6+61992127968750*w^5
 
 This means that \textsc{Maple} recognizes that the value of $w$ can be
 chosen arbitrarily and that the solution solely depends on the values
-of $x,y$ and $z$. Furthermore does the solution of \textsc{Maple}
-depend on algebraic extensions of the ground field (usually chosen to
+of $x,y$ and $z$. Furthermore, the solution of \textsc{Maple}
+depends on algebraic extensions of the ground field (usually chosen to
 be $\QQ$).
 
 The computer algebra system \textsc{Sage} (\cite{sage}), which utilizes
-\textsc{Maxima} (\cite{maxima}) for solving such equations, failed to
-output any solution.
+\textsc{Maxima} (\cite{maxima}) for solving such equations, fails to
+output any solution whatsoever.
 
 The last computer algebra system that we tested for those purposes was
-\textsc{Mathematica} \cite{wolfram1999mathematica} in the context of
+\textsc{Mathematica} \cite{wolfram1999mathematica}, in the context of
 \textsc{Wolfram Alpha}\\ (\url{http://www.wolframalpha.com}). It found
-several solutions, but not one with integer values. One solution was
+several solutions, but not ones with integer values. One solution was,
 for example:
 \begin{verbatim}
 w<-(25 sqrt(21))/13 and 
@@ -601,14 +601,14 @@ and z = -30 sqrt(3) sqrt(1/(x^2 y^3))
 \end{verbatim}
 
 As a conclusion, one can see that deriving an integer solution using
-those helps from outside appears to be a very hard task.
+external tools appears to be a very daunting task.
 
 \subsection{Alternatives}
 
 \textsc{Z3} is of course not the only \textsc{SMT}-solver that is
 available, yet it belongs to the group of the most powerful
-ones. Other tools that are capable of solving complex SMTs and that use the
-same input as \textsc{Z3} are for instance
+ones. Other tools that are capable of solving complex SMT's and that use the
+same input as \textsc{Z3} are, for instance:
 \begin{itemize}
   \item \textsc{Alt-Ergo} (\cite{bobotalt}) and
   \item \textsc{CVC4} (\cite{barrett2011cvc4}).
@@ -622,12 +622,12 @@ can also be done similarly with the tools above. This would lead to an
 interesting comparison between those tools regarding the branches in
 code they are able to resolve.
 
-Another approach that is in our opinion much more preferable would be
-to utilize computer algebra systems as the ones mentioned in the last subsection, which in general contain the
-implementations of the latest research techniques to solve equations
-of all kinds. There is of course more instrumentation to be done in
+Another approach that is, in our opinion, much more preferable would be
+to utilize computer algebra systems such as the ones mentioned in the last subsection, 
+which in general contain the implementations of the latest research techniques to solve equations
+of all kinds. There is, of course, more instrumentation to be done in
 order to get them to work within the \textsc{CREST} context, but the
-extra effort will be paid back by lesser calculation times plus more
+extra effort will be paid back by lower calculation times plus more
 robust results.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -643,11 +643,11 @@ We will start by summarizing evaluations done in \cite{CREST} and
 \cite{CRESTZ3}.
 
 After that, we will discuss project types where evaluations of
-nonlinear equations are likely to be found in \textsc{C/++} programs, and how far spread the use
+nonlinear equations are likely to be found in \textsc{C/++} programs, and how common the use
 of nonlinear equations within boolean expressions is.
 
-We will conclude this section by evaluating pieces of code we found
-interesting in the context of this project.
+We will conclude this section by evaluating CREST on a set of test cases we generated, and we will
+examine some key metrics that give insight into the accuracy and performance of CREST.
 
 \subsection{Summary of Former Evaluations}
 
@@ -655,7 +655,7 @@ The author of \cite{CREST} has tested the original program on three
 different source codes:
 
 \begin{itemize}
-  \item \textsc{Vim} (\cite{oualline2001vi}), $\sim 150,000$loc
+  \item \textsc{Vim} (\cite{oualline2001vi}), $\sim 150,000$locl
   \item \textsc{Grep} (\url{http://www.gnu.org/software/grep/}), $\sim
     15,000$loc
   \item \textsc{Replace} (\cite{harrold2010siemens}), $\sim 600$loc
@@ -672,7 +672,7 @@ In the paper about \textsc{CREST-Z3} (\cite{CRESTZ3}), one can only
 find simple proof of concepts that it extends the classical
 \textsc{CREST}. A large test on real world programs has not been made.
 
-\subsection{How Often do Nonlinear Equations Appear in Real World
+\subsection{The Frequency of Nonlinear Equations Appear in Real World
   programs}
 
 \subsubsection{Ad Real World Programs According to the Limitations.}
@@ -746,6 +746,84 @@ Another area where we found boolean expressions based on nonlinear equations in 
 Summa summarum one can say that considering nonlinear constraints, in practice it is only reasonable to additionally consider them if also floating point numbers are supported. For the supported datatypes, one rarely finds code where those play a significant, non-trivial role.
 
 \subsection{Some Empirical Experiments on the Solving Ability of \textsc{CREST-Z3}}
+We evaluated CREST for both performance and accuracy. To measure performance, we measured the time it took for CREST to analyze a given program. To measure accuracy, we measured the following two variables: program depth, and branch coverage. Due to the fact that CREST cannot handle the unary minus operator, which is prevalent in most real-world programs, we had to create our own test set of programs to evaluate on CREST. We wrote a test-set generator \textsc{createTestFiles.py} that, given several parameters, creates a random C file containing a certain amount nested if-statements, each of which contain an equation, as part of a total system of equations. 
+
+Here we present a sample C program that we generated, specified to have 3 variables, and a nested-depth of 2 :
+
+\begin{verbatim}
+#include <stdio.h>
+int main() {
+    int x0;
+    int x1;
+    int x2;
+    if ( 10 * x2 + 1 * x1 + 4 * x2 == 20 ) {
+        printf("Solved the if at depth 1.\n");
+        if ( 5 * x2 + 6 * x0 + 9 * x0 == 80 ) {
+            printf("Solved the if at depth 2.\n");
+        }
+        else {
+            printf("At the else at depth 2.\n");
+        }
+    }
+    else {
+        printf("At the else at depth 1.\n");
+    }
+}
+\end{verbatim}
+
+We were interested in exploring the effect on program timing and coverage caused by changing several independent variables. The independent variables we analyzed were number-of-variables, nested-depth, and search-type. By search-type, we mean the type of search that CREST uses to traverse the program's control-flow-graph. For testing purposes, this can be one of the following three: DFS, random, and hybrid.
+
+During the course of our analysis, we realized that CREST would often take a long time to analyze programs of large depth or large number of variables. For this reason, in our test script, we decided to make CREST timeout when the analysis took longer than 40 seconds.
+
+Using the aforementioned script, we generated a test-set of 75 C files, which consists of 3 unique C files for each tuple (number-variables, nested-depth), where number-variables and nested-depth range from 1 to 5.
+
+
+
+Table 1 represents the timings when running CREST on our test-set using DFS search-mode:
+
+\begin{table}[htbp]
+\caption{}
+\begin{tabular}{|l|r|r|r|r|r|l|}
+\hline
+ & \multicolumn{1}{l|}{} & \multicolumn{1}{l|}{Num-variables} & \multicolumn{1}{l|}{} & \multicolumn{1}{l|}{} & \multicolumn{1}{l|}{} &  \\ \hline
+ & \multicolumn{1}{l|}{} & 1 & 2 & 3 & 4 & \multicolumn{1}{r|}{5} \\ \hline
+Nested-depth & 1 & 0.131 & 0.163 & 0.112 & 2.482 & \multicolumn{1}{r|}{1.19} \\ \hline
+ & 2 & 0.129 & 0.147 & 26.738 & 26.751 & ---- \\ \hline
+ & 3 & 0.111 & 0.133 & 6.354 & 27.138 & ---- \\ \hline
+ & 4 & 0.124 & 0.135 & 27.068 & \multicolumn{1}{l|}{----} & \multicolumn{1}{r|}{26.789} \\ \hline
+ & 5 & 0.167 & 0.244 & 1.393 & \multicolumn{1}{l|}{----} & ---- \\ \hline
+\end{tabular}
+\label{DFS timings (in seconds)}
+\end{table}
+
+\begin{figure}[!t]
+\centering
+\includegraphics[width=13cm]{dfs_timings}
+\caption{}
+\label{figure:motivation}
+\end{figure}
+
+\begin{figure}[!t]
+\centering
+\includegraphics[width=13cm]{random_timings}
+\caption{}
+\label{figure:motivation}
+\end{figure}
+
+\begin{figure}[!t]
+\centering
+\includegraphics[width=13cm]{hybrid_timings}
+\caption{}
+\label{figure:motivation}
+\end{figure}
+
+Figure 1 gives a graphical view of Table 1. The checkered squares of Figure 1 represent tests where the timing went past our threshold of 40 seconds. When we tested several of these programs by hand, we waited for an hour or so, and CREST still did not finish analyzing it.
+
+\section{Our Improvements to CREST}
+\label{sctn:Improvements}
+We accomplished several tasks that we believe will make CREST a more usable tool. We created a web interface for CREST, located at http://dahu.in/cresth.html. At this web interface, one can submit a C file of his choosing, and examine the output that CREST would generate. We believe that this makes it much easier for one to test out CREST, without having to actually go to the trouble of downloading and installing it. From our own experience, the installation of CREST is quite a painful one, as the documentation on the CREST website does not cover many crucial steps that we discovered only through trial and error.
+
+The second improvement that we made to CREST (as mentioned previously) is the development of a Python script that automatically instruments C code so it can work with CREST. CREST has the unfortunate property that all C files must explicitly declare their variables in a CREST format. Our script automatically intstruments C code so this step is not necessary. In fact, our script recursively instruments all C files in a given directory, so an entire project can be instrumented for CREST very easily.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -771,6 +849,7 @@ Another future task is related to the question whether we are content with just 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+\bibliographystyle{plain}
 \bibliography{report}
 
 \end{document}
