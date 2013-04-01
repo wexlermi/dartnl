@@ -749,7 +749,9 @@ Another area where we found boolean expressions based on nonlinear equations in 
 Summa summarum one can say that considering nonlinear constraints, in practice it is only reasonable to additionally consider them if also floating point numbers are supported. For the supported datatypes, one rarely finds code where those play a significant, non-trivial role.
 
 \subsection{Some Empirical Experiments on the Solving Ability of \textsc{CREST-Z3}}
-We evaluated CREST for both performance and accuracy. To measure performance, we measured the time it took for CREST to analyze a given program. To measure accuracy, we measured the following two variables: program depth, and branch coverage. Due to the fact that CREST cannot handle the unary minus operator, which is prevalent in most real-world programs, we had to create our own test set of programs to evaluate on CREST. We wrote a test-set generator \textsc{createTestFiles.py} that, given several parameters, creates a random C file containing a certain amount nested if-statements, each of which contain an equation, as part of a total system of equations. 
+We evaluated CREST for both performance and accuracy. To measure performance, we measured the time it took for CREST to analyze a given program. To measure accuracy, we measured the branch coverage ratio, which is the number of branches CREST reaches, divided by the total number of program branches.
+
+Due to the fact that CREST cannot handle the unary minus operator, which is prevalent in most real-world programs, we had to create our own test set of programs to evaluate on CREST. We wrote a test-set generator \textsc{createTestFiles.py} that, given several parameters, creates a random C file containing a certain amount nested if-statements, each of which contain an equation, as part of a total system of equations. For the equations in our test programs, we specified the total degree for any individual monomial to be 2, and the variables to range from 0 to 10. Future analysis could also change these variables, and see how the dependent variables change.
 
 Here we present a sample C program that we generated, specified to have 3 variables, and a nested-depth of 2 :
 
@@ -778,9 +780,7 @@ We were interested in exploring the effect on program timing and coverage caused
 
 During the course of our analysis, we realized that CREST would often take a long time to analyze programs of large depth or large number of variables. For this reason, in our test script, we decided to make CREST timeout when the analysis took longer than 40 seconds.
 
-Using the aforementioned script, we generated a test-set of 75 C files, which consists of 3 unique C files for each tuple (number-variables, nested-depth), where number-variables and nested-depth range from 1 to 5. For the equations in each if-statement, we restricted the total degree for any individual monomial to be 2. Future analysis could change this variable, and see how the dependent variables change.
-
-
+Using the aforementioned script, we generated a test-set of 75 C files, which consists of 3 unique C files for each tuple (number-variables, nested-depth), where number-variables and nested-depth range from 1 to 5.  
 
 Table 1 represents the timings when running CREST on our test-set using DFS (depth-first-search) search-mode.
 
@@ -838,7 +838,7 @@ Depth & 1 & 1 & 1 & 1 & 1 & 1 \\ \hline
 \label{figure:motivation}
 \end{figure}
 
-Figure 2/Table 2 show the results of measuring branch coverage for the DFS run-mode. By branch coverage, we mean the number of branches in the control-flow-graph that CREST was able to get to. Since every if-statement has a corresponding else-statement in our test set, the number of total branches for a given program is twice the depth. We found that as the number of variables in a program increased, the branch-coverage-ratio decreased, because it made it more difficult for Z3 to solve the constraints. Additionally, as we increase the program depth by one, the number of total branches increases by a factor of 2. This lowers the branch-coverage-ratio immensely.
+Figure 2/Table 2 show the results of measuring branch coverage for the DFS run-mode. By branch coverage, we mean the number of branches in the control-flow-graph that CREST was able to get to. Since every if-statement has a corresponding else-statement in our test set, the number of total branches for a given program is twice the depth. We found that as the number of variables in a program increased, the branch-coverage-ratio decreased, because it made it more difficult for Z3 to solve the constraints. Additionally, as we increase the program depth by one, the number of total branches increases by 2. This lowers the branch-coverage-ratio since CREST now has more branches to solve.
 
 \begin{table}[htbp]
 \caption{Results for running CREST for depth = number-variables = 3}
