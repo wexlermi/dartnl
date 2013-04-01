@@ -52,37 +52,54 @@ def runFileThroughCrestAndGetStats(cFile):
 	crestc_command = os.path.join(crestDir, "bin/crestc") + ' ' + os.path.join(testDir,cFile)
 	crestc_output = run(crestc_command, shell=True, timeout = 3)[2]
 
+	print crestc_output
+
 	start = time.time()
 	exportZ3LibCmd = 'export LD_LIBRARY_PATH=./crest-z3-master/z3/lib'
-	run_crest_command = exportZ3LibCmd + ' && ' + os.path.join(crestDir, "bin/run_crest") + ' ' + os.path.join(testDir,cFile[ :len(cFile)-2]) + ' 10 -dfs'
+	run_crest_command = exportZ3LibCmd + ' && ' + os.path.join(crestDir, "bin/run_crest") + ' ' + os.path.join(testDir,cFile[ :len(cFile)-2]) + ' 10 -hybrid'
 
 	print cFile
 	run_crest_output = run(run_crest_command, shell=True, timeout=40)
 	ifOutput = run_crest_output[1]
 	iterationOutput = run_crest_output[2]
+	
 	print ifOutput
 	print iterationOutput
 	
 	end = time.time()
 	
-	results =  parseCrestOutput(crestc_output, iterationOutput)
+	results =  parseCrestOutput(iterationOutput)
+	maxdepth = parseProgOutput(ifOutput)
 	metrics = {}
 	metrics["timing"] = end - start
 	metrics["coverage"] = results
+	metrics["depth"] = maxdepth
 	return metrics
 
 #TODO
 #get the coverage ratio of each test case
-def parseCrestOutput(crestc_output,run_crest_output):
-	temp = re.findall(r'\w+\sbranches',crestc_output)
-	tks = temp[0].split(" ")
-	branches = tks[0]
+def parseCrestOutput(run_crest_output):
+	#temp = re.findall(r'\w+\sbranches',crestc_output)
+	#tks = temp[0].split(" ")
+	#branches = tks[0]
 	covereds = re.findall(r'covered\s\d+',run_crest_output)
 	maxBranch = 0
 	#print covereds
 	for covered in covereds:
 		maxBranch = max(maxBranch, int(covered[8:]))
 	return maxBranch
+
+
+def parseProgOutput(ifOutput):
+	#temp = re.findall(r'\w+\sbranches',crestc_output)
+	#tks = temp[0].split(" ")
+	#branches = tks[0]
+	solveds = re.findall(r'Solved the if at depth\s\d+',ifOutput)
+	maxDepth = 0
+	#print covereds
+	for solved in solveds:
+		maxDepth = max(maxDepth, int(solved[23:]))
+	return maxDepth
 
 nvar = 5
 depth = 5
@@ -95,6 +112,8 @@ def aggregatedTime(Depth, numVar, timing):
 '''
 #aggregated timing and coverage for each nvar
 table_coverage = [[0 for x in xrange(nvar)] for x in xrange(depth)]
+
+table_depth = [[0 for x in xrange(nvar)] for x in xrange(depth)]
 '''
 def aggregatedByNvar(nvar, timing, coverage):
 	if nvar not in table_nvar:
@@ -126,11 +145,21 @@ def getAverageCoverage():
 	for i in xrange(depth):
 		f.write(str(i+1)+"\t")
 		for j in xrange(nvar):
-			coverage = table_coverage[i][j]/3
+			coverage = float(table_coverage[i][j])/float(3)
 			f.write("%10s"% str(coverage))
 		f.write("\n")
 	f.close()
 
+def getAverageDepth():
+	f = open("result_Depth.txt", "w")
+	f.write("\t%20s"%"1"+"%20s"%"2"+"%20s"%"3"+"%20s"%"4"+"%20s"%"5"+"\n")
+	for i in xrange(depth):
+		f.write(str(i+1)+"\t")
+		for j in xrange(nvar):
+			coverage = float(table_depth[i][j])/float(3)
+			f.write("%20s"% str(coverage))
+		f.write("\n")
+	f.close()
 
 #Parse the C file name, returning a dictionary containing the parameters of the C file   
 def parseCFileName(filename):
@@ -161,14 +190,16 @@ for cFile in cFiles:
 	metrics = runFileThroughCrestAndGetStats(cFile)
 	timing = metrics["timing"]
 	coverage = metrics["coverage"]
+	dep = metrics["depth"]
 	print(metrics)
 	key = str(numEquations)+'_'+str(numVars)
 	table_time[numEquations-1][numVars-1] += timing
 	table_coverage[numEquations-1][numVars-1]+=coverage
+	table_depth[numEquations-1][numVars-1]+=dep
 	#aggregated(key, timing, coverage)
 	#aggregatedByNvar(numVars, timing, coverage)
 
 
 getAverageTime()
 getAverageCoverage()
-
+getAverageDepth()
