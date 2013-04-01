@@ -782,10 +782,12 @@ Using the aforementioned script, we generated a test-set of 75 C files, which co
 
 
 
-Table 1 represents the timings when running CREST on our test-set using DFS (depth-first-search) search-mode:
+Table 1 represents the timings when running CREST on our test-set using DFS (depth-first-search) search-mode.
+
 
 \begin{table}[htbp]
 \caption{}
+\begin{center}
 \begin{tabular}{|l|r|r|r|r|r|l|}
 \hline
  & \multicolumn{1}{l|}{} & \multicolumn{1}{l|}{Num-variables} & \multicolumn{1}{l|}{} & \multicolumn{1}{l|}{} & \multicolumn{1}{l|}{} &  \\ \hline
@@ -796,8 +798,10 @@ Nested-depth & 1 & 0.131 & 0.163 & 0.112 & 2.482 & \multicolumn{1}{r|}{1.19} \\ 
  & 4 & 0.124 & 0.135 & 27.068 & \multicolumn{1}{l|}{----} & \multicolumn{1}{r|}{26.789} \\ \hline
  & 5 & 0.167 & 0.244 & 1.393 & \multicolumn{1}{l|}{----} & ---- \\ \hline
 \end{tabular}
+\end{center}
 \label{DFS timings (in seconds)}
 \end{table}
+
 
 \begin{figure}[!t]
 \centering
@@ -808,8 +812,10 @@ Nested-depth & 1 & 0.131 & 0.163 & 0.112 & 2.482 & \multicolumn{1}{r|}{1.19} \\ 
 
 Figure 1 gives a graphical view of Table 1. The checkered squares of Figure 1 represent tests where the timing went past our threshold of 40 seconds. When we tested several of these programs by hand, we waited for an hour or so, and CREST still did not finish analyzing it. The results seem to confirm our guess that CREST runtime increases as the number of variables and the number of nested if-statements increase. We were a bit disconcerted to see that several of our test cases were unable to be solved by CREST in a feasible amount of time. Our previous discussion already mentioned some of the performance issues of non-linear equation solving.
 
+
 \begin{table}[htbp]
 \caption{DFS branch-coverage-ratio}
+\begin{center}
 \begin{tabular}{|l|r|r|r|r|r|r|}
 \hline
  & \multicolumn{1}{l|}{} & \multicolumn{1}{l|}{Num-vars} & \multicolumn{1}{l|}{} & \multicolumn{1}{l|}{} & \multicolumn{1}{l|}{} & \multicolumn{1}{l|}{} \\ \hline
@@ -820,6 +826,7 @@ Depth & 1 & 1 & 1 & 1 & 1 & 1 \\ \hline
  & 4 & 0.625 & 0.75 & 0.25 & 0 & 0 \\ \hline
  & 5 & 0.6 & 0.7 & 0.6 & 0 & 0 \\ \hline
 \end{tabular}
+\end{center}
 \label{DFS branch-coverage-ratio}
 \end{table}
 
@@ -835,14 +842,17 @@ Figure 2/Table 2 show the results of measuring branch coverage for the DFS run-m
 
 \begin{table}[htbp]
 \caption{Results for running CREST for depth = number-variables = 3}
+\begin{center}
 \begin{tabular}{|l|r|r|r|}
 \hline
  & \multicolumn{1}{l|}{DFS} & \multicolumn{1}{l|}{Random} & \multicolumn{1}{l|}{Hybrid} \\ \hline
 Runtime (seconds) & 6.354 & 13.572 & 13.49 \\ \hline
 Branch-coverage-ratio & 0.667 & 0.222 & 0.5 \\ \hline
 \end{tabular}
+\end{center}
 \label{DFS timings (in seconds)}
 \end{table}
+
 
 Table 3 summarizes the performance and accuracy of CREST on the test-files corresponding to depth = number-variables = 3. We find that DFS gives the best performance and accuracy of the three run-modes, while random gives the worst results.
 
