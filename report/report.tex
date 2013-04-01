@@ -164,28 +164,28 @@ Let us study how this is done using the following example:
 \label{ex:codeForDemo}
 \begin{verbatim}
 
-[1]   #include <crest.h>
-[2]   #include <stdio.h>
+[1] #include <crest.h>
+[2] #include <stdio.h>
 [3]  
-[4]   int main(int argc, char *argv[])
-[5]   {
-[6]     int w;
-[7]     int x;
-[8]     int y;
-[9]     int z;
-[10]    CREST_int(x);
-[11]    CREST_int(y);
-[12]    CREST_int(z);
-[13]    CREST_int(w);
-[14]    if (x*y + z == 0){
-[15]      w = x*y*z;
-[16]      if (w == z + x*y-1){
-[17]        printf("GOAL %d %d %d %d\n", x, y, z, w);
-[18]        return 1;
-[19]      }
-[20]    }	
-[21]    return 0;
-[22]  }
+[4] int main(int argc, char *argv[])
+[5] {
+[6]   int w;
+[7]   int x;
+[8]   int y;
+[9]   int z;
+[10]  CREST_int(x);
+[11]  CREST_int(y);
+[12]  CREST_int(z);
+[13]  CREST_int(w);
+[14]  if (x*y + z == 0){
+[15]    w = x*y*z;
+[16]    if (w == z + x*y-1){
+[17] printf("GOAL %d %d %d %d\n", x, y, z, w);
+[18]      return 1;
+[19]    }
+[20]  }	
+[21]  return 0;
+[22]}
 \end{verbatim}
 \end{example}
 
@@ -557,8 +557,6 @@ element in the output for the sake of visualization:
 -79140476520758021570218836000000000yw26
 +108725930332567845122270489310000000000yw25
 -88760995051809423012610038134400000000000yw24
-+39085314130645312603256453079810000000000000yw23
--7116024938996671115986413518424570000000000000yw22
 +[...]
 \end{verbatim}
 
@@ -575,12 +573,17 @@ not provide the easy solution that we know about this system.
 The computer algebra system \textsc{Maple} (\cite{Maple}) e.g. outputs the following:
 \begin{verbatim}
 {w = w,
-x = RootOf(13*w*_Z^6-5*w*_Z^5+13*w^2*_Z^3+(-5*w^2+20475*w)
+x = RootOf(13*w*_Z^6-5*w*_Z^5+
+    13*w^2*_Z^3+(-5*w^2+20475*w)
     *_Z^2-5250*w*_Z-1378125+17745*w^2),
-y = -(13*RootOf(13*w*_Z^6-5*w*_Z^5+13*w^2*_Z^3
-    +(-5*w^2+20475*w)*_Z^2-5250*w*_Z-1378125+17745*w^2)^2*w[...],
-z = 338*RootOf(-15138703125*w^6+61992127968750*w^5
-    -12932841796875*w^4-4814544287109375*w^3[...]}
+y = -(13*RootOf(13*w*_Z^6
+    -5*w*_Z^5+13*w^2*_Z^3
+    +(-5*w^2+20475*w)*_Z^2-5250*w*_Z
+    -1378125+17745*w^2)^2*w[...],
+z = 338*RootOf(-15138703125*w^6
+    +61992127968750*w^5
+    -12932841796875*w^4
+    -4814544287109375*w^3[...]}
 \end{verbatim}
 
 This means that \textsc{Maple} recognizes that the value of $w$ can be
@@ -600,7 +603,8 @@ several solutions, but not ones with integer values. One solution was,
 for example:
 \begin{verbatim}
 w<-(25 sqrt(21))/13 and 
-x = Root[13 #1^6 w-5 #1^5 w+13 #1^3 w^2+#1^2 (20475 w-5 w^2)-5250 #1
+x = Root[13 #1^6 w-5 #1^5 w+13
+   `#1^3 w^2+#1^2 (20475 w-5 w^2)-5250 #1
     w+17745 w^2-1378125&, 1]
 and y = 1/2 (sqrt((x^4+2100)/w^2)-x^2/w)
 and z = -30 sqrt(3) sqrt(1/(x^2 y^3))
@@ -724,7 +728,7 @@ tracing'' (\cite{glassner1989introduction}) for example, they are very common. T
 \begin{verbatim}
 [...]
 [1] double B = r.dir * dist;
-[2] double D = B*B - dist * dist + s.size * s.size; 
+[2] double D=B*B-dist*dist+s.size*s.size; 
 [3] if (D < 0.0f) 
 [4]     return false; 
 [5] double t0 = B - sqrt(D); 
@@ -761,21 +765,21 @@ Here we present a sample C program that we generated, specified to have 3 variab
 \begin{verbatim}
 #include <stdio.h>
 int main() {
-	int x0;
-	int x1;
-	int x2;
-    if ( 9 * x0 * x0 + 4 * x2 * x2 + 8 * x0 * x1 == 500 ) {
-        printf("Solved the if at depth 1.\n");
-        if ( 9 * x0 * x1 + 8 * x2 * x2 + 6 * x1 * x2 == 728 ) {
-            printf("Solved the if at depth 2.\n");
-        }
-        else {
-            printf("At the else at depth 2.\n");
-        }
+  int x0;
+  int x1;
+  int x2;
+  if ( 9*x0*x0+4*x2*x2+8*x0*x1==500 ) {
+    printf("Solved the if at depth 1.\n");
+    if (9*x0*x1+8*x2*x2+6*x1*x2 == 728 ) {
+      printf("Solved the if at depth 2.\n");
     }
     else {
-        printf("At the else at depth 1.\n");
+      printf("At the else at depth 2.\n");
     }
+  }
+  else {
+    printf("At the else at depth 1.\n");
+  }
 }
 \end{verbatim}
 
@@ -805,7 +809,7 @@ Table 1 represents the timings when running CREST on our test-set using DFS (dep
 
 \begin{figure}[!t]
 \centering
-\includegraphics[width=13cm]{dfs_timings}
+\includegraphics[width=9cm]{dfs_timings}
 \caption{}
 \label{figure:motivation}
 \end{figure}
@@ -832,7 +836,7 @@ Figure 1 gives a graphical view of Table 1. The checkered squares of Figure 1 re
 
 \begin{figure}[!t]
 \centering
-\includegraphics[width=13cm]{dfs_branch_coverage}
+\includegraphics[width=9cm]{dfs_branch_coverage}
 \caption{}
 \label{figure:motivation}
 \end{figure}
